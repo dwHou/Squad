@@ -123,9 +123,23 @@ If no clear match, default to **Engineer:fullstack**
 
 ## Command Syntax
 
-### Basic Usage
+### Persistent Mode (Recommended)
 ```bash
-/squad [task description]
+/squad                     # Enter persistent mode - all messages auto-routed
+fix login bug              # Auto-routed to Squad
+add dark mode              # Auto-routed to Squad
+/exit                      # Exit persistent mode
+```
+
+**Benefits:**
+- ✅ Enter once, use continuously
+- ✅ Natural conversation flow
+- ✅ No need to type /squad every time
+- ✅ Similar to wukong's persistent mode
+
+### Single-Shot Mode
+```bash
+/squad [task description]  # Execute once and exit
 ```
 
 ### Configuration
@@ -381,6 +395,71 @@ Router design supports future extensions without breaking changes.
 
 ---
 
+## Persistent Mode
+
+**NEW in v0.2.0:** Squad now supports persistent mode, where all user messages are automatically routed to Squad orchestration.
+
+### How It Works
+
+```
+/squad (no parameters)
+    ↓
+Enter persistent mode
+    ↓
+All user input → Auto-routed to Squad
+    ↓
+/exit
+    ↓
+Exit persistent mode
+```
+
+### Auto-Routing Detection
+
+**Every user input is checked:**
+
+1. **Is Squad session active?** (check `~/.squad/session.yaml`)
+2. **Is input a command?** (starts with `/`)
+   - If YES → Handle command normally
+   - If NO → Auto-route to Squad
+
+**Commands recognized:**
+- `/exit`, `/quit` - Exit persistent mode
+- `/squad ...` - Explicit Squad invocation (overrides auto-routing)
+- Other `/...` commands - Pass through to Claude
+
+### Session State
+
+```yaml
+# ~/.squad/session.yaml
+active: true
+started_at: 2026-01-29T10:30:00Z
+mode: persistent
+language: zh
+last_agent: engineer:frontend
+last_task_at: 2026-01-29T10:35:00Z
+```
+
+**State management:**
+- Created when `/squad` (no params) is invoked
+- Checked on every user input
+- Deleted when `/exit` or `/quit` is invoked
+
+### Priority
+
+**Persistent mode is recommended** over single-shot mode for:
+- ✅ Multi-task workflows
+- ✅ Extended development sessions
+- ✅ Natural conversation flow
+- ✅ Reduced command overhead
+
+**Single-shot mode is useful** for:
+- ✅ Quick one-off tasks
+- ✅ Explicit agent/tag specification
+- ✅ When not in continuous development
+
+---
+
 ## Version History
 
+- **v0.2.0** - Added persistent mode, auto-routing, /exit command
 - **v0.1.0** (MVP) - Basic routing, 3 agents, tag system

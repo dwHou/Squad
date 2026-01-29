@@ -15,7 +15,11 @@ When the user types `/squad`, this command activates the Squad framework and han
 ## Syntax
 
 ```bash
-# Basic usage
+# Persistent mode (NEW)
+/squad                     # Enter persistent mode (no task = session mode)
+/squad exit                # Exit persistent mode
+
+# Basic usage (single-shot mode)
 /squad [task description]
 
 # Agent specification
@@ -50,6 +54,51 @@ When the user types `/squad`, this command activates the Squad framework and han
 ---
 
 ### Step 2: Handle Special Commands
+
+#### Persistent Mode (NEW)
+
+**When user types `/squad` with NO parameters:**
+
+```bash
+/squad
+```
+
+**Action:**
+1. Check if already in persistent mode by reading `~/.squad/session.yaml`
+2. If already active, show: "✓ Already in Squad persistent mode. Type /exit to quit."
+3. If not active:
+   - Create `~/.squad/session.yaml`:
+     ```yaml
+     active: true
+     started_at: 2026-01-29T10:30:00Z
+     mode: persistent
+     language: zh  # from config.yaml
+     ```
+   - Display welcome message:
+     ```
+     ✓ Squad 持久模式已启动
+
+     现在所有对话都会通过 Squad 智能体编排。
+
+     示例：
+       fix login bug        → 自动路由
+       add dark mode        → 自动路由
+
+     退出：输入 /exit 或 /squad exit
+     ```
+
+**When user types `/squad exit`:**
+
+```bash
+/squad exit
+```
+
+**Action:**
+1. Check `~/.squad/session.yaml` exists
+2. Delete the file or set `active: false`
+3. Display: "✓ 已退出 Squad 持久模式"
+
+---
 
 #### `config` Sub-command
 
@@ -133,14 +182,17 @@ DESCRIPTION
   to handle development tasks through intelligent routing and tagging.
 
   Features:
+  • Persistent mode - Enter once, use continuously
   • Automatic task routing based on keywords
   • Tag-based agent specialization (frontend/backend/etc)
   • Bilingual support (English/中文)
   • Token-efficient serial execution
 
 USAGE
-  /squad [OPTIONS] [TASK_DESCRIPTION]
+  /squad                              # Enter persistent mode (NEW)
+  /squad [OPTIONS] [TASK_DESCRIPTION] # Single-shot mode
   /squad @agent[:tag] [TASK_DESCRIPTION]
+  /squad exit                         # Exit persistent mode
 
 OPTIONS
   --help, -h           Show this help message
@@ -166,6 +218,17 @@ AGENTS & TAGS
     Model: Haiku (cost-efficient)
 
   * = default tag when not specified
+
+MODES
+  Persistent mode (recommended for continuous work):
+    /squad                  # Enter persistent mode
+    fix login button        # Auto-routed to Engineer:frontend
+    add dark mode           # Auto-routed to Engineer:frontend
+    /exit                   # Exit persistent mode
+
+  Single-shot mode (quick tasks):
+    /squad fix login button
+      → Execute once and exit
 
 ROUTING EXAMPLES
   Automatic routing (recommended):
@@ -474,22 +537,9 @@ Available tags for engineer:
 Use /squad --help for more information
 ```
 
-### Missing Task
+### Missing Task (REMOVED)
 
-```
-User: /squad
-
-Response:
-❌ No task specified
-
-Usage: /squad [task description]
-
-Examples:
-  /squad fix login bug
-  /squad @researcher explore codebase
-
-Use /squad --help for more information
-```
+**Note:** `/squad` without parameters now enters persistent mode, not an error.
 
 ---
 
