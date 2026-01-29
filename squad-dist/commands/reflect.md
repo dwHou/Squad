@@ -283,86 +283,287 @@ general:
 
 ## Step 4: Ask User for Approval
 
-Use `AskUserQuestion` to present proposals:
+**CRITICAL: Always show detailed diffs before applying changes**
+
+### 4.1: Display All Proposed Changes with Diffs
+
+For each proposal, show:
+1. Title and confidence level
+2. Files affected
+3. Complete diff (before/after)
+4. Risk assessment
 
 ```python
 # Filter proposals by confidence level
 high_confidence_proposals = [p for p in proposals if p.confidence == "high"]
-medium_confidence_proposals = [p for p in proposals if p.confidence == "medium"]
 
 if len(high_confidence_proposals) > 0:
-    display_proposals_summary(high_confidence_proposals)
+    # Display proposals with full diffs
+    for i, proposal in enumerate(high_confidence_proposals):
+        print(f"\n## 提案 {i+1}: {proposal.title}")
+        print(f"**置信度 (Confidence):** {'✅ 高' if proposal.confidence == 'high' else '⚠️ 中'}")
+        print(f"**影响的文件 (Files):** {proposal.file_paths}")
+        print(f"\n**改动详情 (Diff):**")
+        print("```diff")
+        print(proposal.diff)  # Show full diff
+        print("```")
+        print(f"\n**风险评估 (Risk):** {proposal.risk_assessment}")
+        print("---")
+```
 
-    answer = AskUserQuestion(
+### 4.2: Ask User to Approve/Reject Each Change
+
+**Three-option workflow for maximum control:**
+
+```python
+    # First: Let user select which changes to apply
+    selection_answer = AskUserQuestion(
         questions=[{
-            "question": "Would you like Squad to apply these improvements?",
-            "header": "Evolution",
+            "question": "请选择您想要应用的改进 (您可以选择多个或不选)",
+            "header": "选择改进",
             "options": [
                 {
-                    "label": "✅ Apply all high-confidence improvements",
-                    "description": "Low-risk improvements that enhance Squad's performance. All changes will be logged."
-                },
-                {
-                    "label": "📋 Show me details first",
-                    "description": "Review detailed diffs before deciding. You can approve individual changes."
-                },
-                {
-                    "label": "❌ No changes this time",
-                    "description": "Skip evolution. Squad will not modify any files."
+                    "label": f"提案 {i+1}: {p.title}",
+                    "description": f"文件: {p.file_paths[0]} | 风险: {p.risk_level}"
                 }
+                for i, p in enumerate(high_confidence_proposals)
             ],
-            "multiSelect": false
+            "multiSelect": true  # Allow multiple selections
         }]
     )
+
+    # Extract selected proposals
+    selected_proposals = [
+        high_confidence_proposals[i]
+        for i in selection_answer.selected_indices
+    ]
+
+    # If user selected at least one change, ask about sync strategy
+    if len(selected_proposals) > 0:
+        sync_answer = AskUserQuestion(
+            questions=[{
+                "question": "您希望如何应用这些改进？",
+                "header": "同步策略",
+                "options": [
+                    {
+                        "label": "✅ 仅更新本地 (Local only)",
+                        "description": "只更新 ~/.claude/ 运行时文件。改进立即生效，但不会同步到 squad-dist/ 仓库源文件。适合个人实验性改进。"
+                    },
+                    {
+                        "label": "🚀 更新本地并同步到仓库 (Local + Repo)",
+                        "description": "同时更新 ~/.claude/ 和 squad-dist/。改进立即生效，且可以 commit 分享给团队。适合确认有效的改进。(推荐)"
+                    },
+                    {
+                        "label": "❌ 取消 (Cancel)",
+                        "description": "不应用任何改动。"
+                    }
+                ],
+                "multiSelect": false
+            }]
+        )
+
+        # Determine sync mode based on user choice
+        sync_mode = parse_sync_mode(sync_answer)
+        # sync_mode: "local_only" | "local_and_repo" | "cancel"
+
+        if sync_mode != "cancel":
+            apply_improvements(selected_proposals, sync_mode)
+    else:
+        print("未选择任何改进，跳过演进。")
 ```
 
 ---
 
 ## Step 5: Apply Approved Changes
 
+### Configurable Sync Architecture
+
+**Three sync modes for maximum flexibility:**
+
+#### Mode 1: Local Only (本地仅)
+```
+User approves change + selects "仅更新本地"
+        ↓
+1. Update ~/.claude/ (runtime) → Takes effect immediately
+        ↓
+2. Create backup for runtime
+        ↓
+3. Log changes (local-only mode)
+        ↓
+4. Display summary + warning about ./install.sh override
+```
+
+**Use case:** Experimental improvements, personal tweaks
+
+**Trade-off:**
+- ✅ Quick to apply
+- ✅ Private (not shared with team)
+- ⚠️ Will be overwritten if you run `./install.sh` later
+- ⚠️ Not shared with other users
+
+---
+
+#### Mode 2: Local + Repo (本地并同步到仓库) [Recommended]
+```
+User approves change + selects "更新本地并同步到仓库"
+        ↓
+1. Update ~/.claude/ (runtime) → Takes effect immediately
+        ↓
+2. Update squad-dist/ (source) → Can be committed to git
+        ↓
+3. Create backups for both locations
+        ↓
+4. Verify both files match
+        ↓
+5. Log changes (dual-path mode)
+        ↓
+6. Display summary + git commit suggestion
+```
+
+**Use case:** Confirmed improvements worth sharing with team
+
+**Trade-off:**
+- ✅ Immediate effect + permanent
+- ✅ Shareable via git
+- ✅ Survives `./install.sh` reinstall
+- ✅ Benefits the whole team
+
+---
+
+#### Mode 3: Cancel (取消)
+```
+User selects "取消"
+        ↓
+No changes applied
+        ↓
+Reflection report saved for future reference
+```
+
 ### Change Application Process
 
 ```python
-def apply_improvements(approved_proposals):
-    """Apply approved improvements with logging and backup."""
+def apply_improvements(approved_proposals, sync_mode):
+    """Apply approved improvements with configurable sync strategy.
+
+    Args:
+        approved_proposals: List of proposals to apply
+        sync_mode: "local_only" | "local_and_repo"
+    """
 
     changes_log = []
+    REPO_ROOT = "/Applications/Programming/code/GitProj/Squad"
 
     for proposal in approved_proposals:
-        # 1. Backup original file
-        backup_file(proposal.file_path)
+        runtime_path = proposal.file_path  # e.g., ~/.claude/agents/engineer.md
+        source_path = get_source_path(runtime_path, REPO_ROOT) if sync_mode == "local_and_repo" else None
 
-        # 2. Apply change
         try:
-            apply_change(proposal)
+            # 1. Backup runtime file (always)
+            runtime_backup = backup_file(runtime_path)
+            source_backup = None
 
-            # 3. Log success
-            changes_log.append({
+            # 2. Apply change to runtime (immediate effect)
+            apply_change(runtime_path, proposal.change)
+
+            # 3. Conditionally apply to source (based on sync_mode)
+            if sync_mode == "local_and_repo" and source_path:
+                source_backup = backup_file(source_path) if os.path.exists(source_path) else None
+                apply_change(source_path, proposal.change)
+
+                # Verify both files match
+                if not files_match(runtime_path, source_path):
+                    raise Exception("Runtime and source files don't match after sync")
+
+            # 4. Log success
+            log_entry = {
                 "proposal_id": proposal.id,
-                "file": proposal.file_path,
+                "runtime_file": runtime_path,
                 "action": proposal.action,
                 "status": "success",
                 "timestamp": now(),
-                "backup": backup_path
-            })
+                "runtime_backup": runtime_backup,
+                "sync_mode": sync_mode
+            }
+
+            if sync_mode == "local_and_repo":
+                log_entry["source_file"] = source_path
+                log_entry["source_backup"] = source_backup
+                log_entry["sync"] = "dual-path-completed"
+            else:
+                log_entry["sync"] = "local-only"
+
+            changes_log.append(log_entry)
 
         except Exception as e:
-            # 4. Rollback on error
-            restore_backup(proposal.file_path)
+            # 5. Rollback on error
+            restore_backup(runtime_path, runtime_backup)
+            if source_backup:
+                restore_backup(source_path, source_backup)
 
             changes_log.append({
                 "proposal_id": proposal.id,
-                "file": proposal.file_path,
+                "runtime_file": runtime_path,
+                "source_file": source_path if sync_mode == "local_and_repo" else None,
                 "status": "failed",
                 "error": str(e),
-                "rollback": "completed"
+                "rollback": "completed",
+                "sync_mode": sync_mode
             })
 
-    # 5. Write evolution log
+    # 6. Write evolution log
     write_evolution_log(changes_log)
 
-    # 6. Display summary
+    # 7. Display summary based on sync mode
     display_evolution_summary(changes_log)
+
+    # 8. Display mode-specific instructions
+    successful_changes = [log for log in changes_log if log["status"] == "success"]
+
+    if len(successful_changes) > 0:
+        if sync_mode == "local_only":
+            print("\n✅ 改动已应用到本地:")
+            print("   - ~/.claude/ (运行时) → 立即生效 ✓")
+            print("\n📝 注意:")
+            print("   - 这些改动仅在您的本地环境生效")
+            print("   - 未同步到 squad-dist/ 仓库源文件")
+            print("   - 如果将来运行 ./install.sh，这些改动可能会被覆盖")
+            print("\n💡 如果测试有效，建议稍后运行:")
+            print("   /squad reflect  # 重新选择这些改进")
+            print("   选择 '更新本地并同步到仓库' 以永久保存")
+
+        elif sync_mode == "local_and_repo":
+            print("\n✅ 改动已应用到两个位置:")
+            print("   - ~/.claude/ (运行时) → 立即生效 ✓")
+            print("   - squad-dist/ (源文件) → 可以 commit 到 git ✓")
+            print("\n💡 建议操作:")
+            print("   git add squad-dist/")
+            print("   git commit -m \"evolve: [描述改进内容]\"")
+            print("   git push  # 分享给其他用户")
+
+
+def get_source_path(runtime_path, repo_root):
+    """Convert runtime path to source path."""
+    # ~/.claude/agents/engineer.md → squad-dist/agents/engineer.md
+    # ~/.squad/router.yaml → squad-dist/router/router.yaml
+
+    if "/.claude/agents/" in runtime_path:
+        filename = os.path.basename(runtime_path)
+        return os.path.join(repo_root, "squad-dist/agents", filename)
+
+    elif "/.claude/commands/" in runtime_path:
+        filename = os.path.basename(runtime_path)
+        return os.path.join(repo_root, "squad-dist/commands", filename)
+
+    elif "/.claude/skills/" in runtime_path:
+        filename = os.path.basename(runtime_path)
+        return os.path.join(repo_root, "squad-dist/skills", filename)
+
+    elif "/.squad/router.yaml" in runtime_path:
+        return os.path.join(repo_root, "squad-dist/router/router.yaml")
+
+    else:
+        # Unknown path - log warning
+        return None
 ```
 
 ### Evolution Log
@@ -451,18 +652,34 @@ def detect_regression(proposal):
 ### 3. Scope Limitation
 
 ```python
-# Limit what can be modified
-ALLOWED_FILES = [
+# Limit what can be modified (both runtime and source paths)
+ALLOWED_RUNTIME_FILES = [
     "~/.squad/router.yaml",           # Routing rules
     "~/.claude/agents/*.md",          # Agent definitions
     "~/.claude/skills/*.md",          # Skill definitions
+    "~/.claude/commands/*.md",        # Command definitions
     # "~/.squad/config.yaml",         # NOT allowed (user config)
     # "~/.claude/rules/*.md",         # NOT allowed (core rules)
 ]
 
+ALLOWED_SOURCE_FILES = [
+    "squad-dist/router/router.yaml",  # Routing rules
+    "squad-dist/agents/*.md",         # Agent definitions
+    "squad-dist/skills/*.md",         # Skill definitions
+    "squad-dist/commands/*.md",       # Command definitions
+    # "squad-dist/config.yaml.template", # NOT allowed (template only)
+    # "squad-dist/rules/*.md",        # NOT allowed (core rules)
+]
+
 def validate_change(proposal):
-    if not is_allowed_file(proposal.file_path):
-        raise SecurityError(f"Cannot modify {proposal.file_path}")
+    runtime_path = proposal.file_path
+    source_path = get_source_path(runtime_path)
+
+    if not is_allowed_file(runtime_path, ALLOWED_RUNTIME_FILES):
+        raise SecurityError(f"Cannot modify runtime file: {runtime_path}")
+
+    if source_path and not is_allowed_file(source_path, ALLOWED_SOURCE_FILES):
+        raise SecurityError(f"Cannot modify source file: {source_path}")
 ```
 
 ### 4. Atomic Changes
@@ -737,6 +954,205 @@ You can review it anytime and apply improvements later.
 - Emphasizing existing rules
 - Fixing typos
 - Improving clarity
+
+---
+
+## Configurable Sync Mechanism / 可配置同步机制
+
+### Three Sync Modes
+
+Squad evolution now offers **three sync modes** to give you maximum control:
+
+#### 1. **仅更新本地 (Local Only)**
+- **What:** Only update ~/.claude/ runtime files
+- **When:** Experimental improvements, personal customizations
+- **Pros:** Quick, private, no git noise
+- **Cons:** Lost on `./install.sh`, not shared with team
+
+#### 2. **更新本地并同步到仓库 (Local + Repo)** ⭐ Recommended
+- **What:** Update both ~/.claude/ and squad-dist/
+- **When:** Confirmed valuable improvements
+- **Pros:** Immediate effect + permanent + shareable
+- **Cons:** Requires git commit/push to share
+
+#### 3. **取消 (Cancel)**
+- **What:** Don't apply any changes
+- **When:** Uncertain, need more time to think
+- **Pros:** Safe, reversible decision
+- **Cons:** No improvements applied
+
+### Architecture Diagram
+
+```
+User approves evolution change
+        ↓
+┌───────────────────────────────────────────┐
+│  Apply Change (with dual-path sync)       │
+├───────────────────────────────────────────┤
+│                                           │
+│  Path 1: Runtime (immediate effect)      │
+│  └─ Edit ~/.claude/agents/engineer.md   │
+│     Effect: Next /squad invocation       │
+│                                           │
+│  Path 2: Source (can commit)             │
+│  └─ Edit squad-dist/agents/engineer.md  │
+│     Effect: git commit → other users     │
+│                                           │
+└───────────────────────────────────────────┘
+        ↓
+Verify both files match
+        ↓
+Log changes to ~/.squad/evolution/
+        ↓
+Suggest git commit to user
+```
+
+### File Path Mappings
+
+| Runtime Path | Source Path |
+|--------------|-------------|
+| `~/.claude/agents/engineer.md` | `squad-dist/agents/engineer.md` |
+| `~/.claude/agents/researcher.md` | `squad-dist/agents/researcher.md` |
+| `~/.claude/agents/tester.md` | `squad-dist/agents/tester.md` |
+| `~/.claude/commands/squad.md` | `squad-dist/commands/squad.md` |
+| `~/.claude/skills/translate.md` | `squad-dist/skills/translate.md` |
+| `~/.squad/router.yaml` | `squad-dist/router/router.yaml` |
+
+**NOT synced (user-specific):**
+- `~/.squad/config.yaml` (user configuration)
+- `~/.claude/rules/*.md` (core rules - too risky)
+
+### Benefits
+
+1. **Immediate Effect** - Changes to ~/.claude/ take effect instantly
+2. **Shareable** - Changes to squad-dist/ can be committed and pushed
+3. **Collaborative** - Team members benefit from each other's improvements
+4. **Atomic** - Both paths updated together (all or nothing)
+5. **Reversible** - Both paths backed up and can be rolled back
+
+### Workflow Examples
+
+#### Example 1: Experimental Improvement (Local Only)
+
+```bash
+# You discover a potential improvement
+/squad reflect
+
+# Claude shows you proposed changes with diffs
+## 提案 1: Add "optimize" keyword to backend routing
+**改动详情 (Diff):**
+```diff
+# router.yaml
+engineer:
+  backend:
+    keywords:
++     - optimize
++     - performance
+```
+
+# Step 1: Select which changes to apply
+[✓] 提案 1: Add "optimize" keyword to backend routing
+
+# Step 2: Choose sync strategy
+→ 您选择: ✅ 仅更新本地 (Local only)
+
+# Claude applies to local only
+✅ 改动已应用到本地:
+   - ~/.claude/ (运行时) → 立即生效 ✓
+
+📝 注意:
+   - 这些改动仅在您的本地环境生效
+   - 未同步到 squad-dist/ 仓库源文件
+   - 如果将来运行 ./install.sh，这些改动可能会被覆盖
+
+# You test it for a few days...
+# If it works well, run /squad reflect again and choose "Local + Repo"
+```
+
+---
+
+#### Example 2: Confirmed Improvement (Local + Repo)
+
+```bash
+# You've tested the improvement and it works great
+/squad reflect
+
+# Claude shows the same proposal
+## 提案 1: Add "optimize" keyword to backend routing
+
+# Step 1: Select changes
+[✓] 提案 1: Add "optimize" keyword to backend routing
+
+# Step 2: Choose sync strategy
+→ 您选择: 🚀 更新本地并同步到仓库 (Local + Repo)
+
+# Claude applies to both locations
+✅ 改动已应用到两个位置:
+   - ~/.claude/ (运行时) → 立即生效 ✓
+   - squad-dist/ (源文件) → 可以 commit 到 git ✓
+
+💡 建议操作:
+   git add squad-dist/
+   git commit -m "evolve: Add optimize keyword to improve backend routing"
+   git push  # 分享给其他用户
+
+# You commit and push
+$ git add squad-dist/router/router.yaml
+$ git commit -m "evolve: Add optimize keyword to backend routing"
+$ git push
+
+# Your teammates pull the update
+$ git pull
+$ ./install.sh  # Sync to their ~/.claude/
+
+# They now have your improvement! 🎉
+```
+
+---
+
+#### Example 3: Multiple Changes with Mixed Strategies
+
+```bash
+/squad reflect
+
+# Claude proposes 3 improvements
+## 提案 1: Add "optimize" keyword (High confidence)
+## 提案 2: Change default model to Opus (Medium confidence)
+## 提案 3: Add verbose logging (Low confidence)
+
+# Step 1: Select only high-confidence changes
+[✓] 提案 1: Add "optimize" keyword
+[ ] 提案 2: Change default model
+[ ] 提案 3: Add verbose logging
+
+# Step 2: Choose Local + Repo for confirmed improvement
+→ 您选择: 🚀 更新本地并同步到仓库 (Local + Repo)
+
+# Result: Only proposal 1 applied and synced to repo
+```
+
+### Safety Guarantees
+
+1. **Atomic Updates** - Both paths updated together or neither
+2. **Backup Both** - Both runtime and source backed up before changes
+3. **Verify Match** - After sync, verify runtime == source
+4. **Rollback Both** - On error, rollback both paths
+5. **Audit Trail** - Log which files changed in both locations
+
+### Failure Handling
+
+```python
+# Scenario: Runtime update succeeds, source update fails
+try:
+    apply_change("~/.claude/agents/engineer.md", change)
+    apply_change("squad-dist/agents/engineer.md", change)
+except Exception:
+    # Rollback BOTH files
+    restore_backup("~/.claude/agents/engineer.md")
+    restore_backup("squad-dist/agents/engineer.md")
+    # Log failure
+    # User sees: "Change failed, rolled back both locations"
+```
 
 ---
 
