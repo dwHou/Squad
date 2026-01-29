@@ -306,25 +306,49 @@ LEARN MORE
 
 ### Step 4: Display Routing Decision
 
-**Default mode (token-efficient):**
+**🚨 CRITICAL: You MUST display routing decision before executing.**
+
+**Default mode (token-efficient, recommended):**
 ```
-→ Engineer:frontend
+🎯 @engineer:frontend
 ```
 
-**Verbose mode:**
+Format: `🎯 @{agent}:{tag}`
+
+**Verbose mode (when `--verbose` flag is used):**
 ```
-→ Task analysis:
-  - Keywords detected: [button, login, fix]
-  - Matched pattern: frontend
-  - Confidence: high
-→ Routing: Engineer:frontend
+🎯 Squad 路由分析
+   任务关键词: [button, login, fix]
+   匹配模式: frontend
+   置信度: 高
+
+→ @engineer:frontend
+```
+
+**Why this matters:**
+- Users see which agent is handling their task
+- Provides transparency into Squad's decision-making
+- Confirms Squad system is working correctly
+- Only costs ~3 tokens, but greatly improves user experience
+
+**Examples:**
+```
+🎯 @researcher:codebase
+🎯 @engineer:backend
+🎯 @tester:unit
 ```
 
 ---
 
 ### Step 5: Invoke Agent
 
-Use the Task tool to call the selected agent:
+**🚨 CRITICAL: You MUST use the Task tool - NEVER handle tasks directly.**
+
+Use the Task tool to call the selected agent. This ensures:
+- ✅ Squad agents are actually invoked
+- ✅ Tag-specific behavior is applied
+- ✅ User sees Squad system in action
+- ✅ Consistent agent experience
 
 ```python
 # Step 5.1: Check language preference

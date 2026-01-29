@@ -13,6 +13,49 @@ Squad is a lightweight multi-agent framework that coordinates specialized AI age
 
 ---
 
+## ⚠️ CRITICAL SQUAD EXECUTION RULES
+
+**When handling `/squad` commands, you MUST:**
+
+1. **🚨 ALWAYS show routing decision FIRST** before executing:
+   ```
+   🎯 @engineer:frontend
+   ```
+
+2. **🚨 ALWAYS use Task tool** to invoke the agent - NEVER handle the task directly yourself:
+   ```python
+   Task(subagent_type="engineer", prompt="[TAG: frontend]\n\n{task}", ...)
+   ```
+
+3. **🚨 NEVER skip the agent** - Even if the task seems simple, route it through Squad
+
+**Why this matters:**
+- ✅ User sees which agent is handling their task
+- ✅ Ensures Squad system is actually used
+- ✅ Provides transparency and trust
+- ✅ Only costs ~3 tokens for routing display
+
+**Example flow:**
+```
+User: /squad fix login button
+
+You MUST output:
+🎯 @engineer:frontend
+
+Then call:
+Task(subagent_type="engineer", prompt="[TAG: frontend]\n\nfix login button", ...)
+```
+
+**❌ WRONG - Don't do this:**
+```
+User: /squad fix login button
+
+You: I'll help fix the login button. Let me read the file...
+[directly handles without routing display or Task tool]
+```
+
+---
+
 ## Architecture
 
 ```
