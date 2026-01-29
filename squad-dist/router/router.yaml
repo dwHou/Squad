@@ -1,0 +1,286 @@
+# Squad Router Configuration
+# Version: 0.1.0 (MVP)
+# Purpose: Keyword-based task routing rules
+
+# ============================================================
+# Router Rules
+# ============================================================
+
+researcher:
+  codebase:
+    keywords:
+      # English
+      - explore
+      - find
+      - search
+      - understand
+      - analyze
+      - investigate
+      - locate
+      - discover
+      - trace
+      - lookup
+      # Chinese
+      - 探索
+      - 查找
+      - 搜索
+      - 理解
+      - 分析
+      - 调查
+      - 定位
+      - 发现
+      - 追踪
+    default: true
+
+  documentation:
+    keywords:
+      # English
+      - docs
+      - documentation
+      - guide
+      - tutorial
+      - reference
+      - manual
+      - readme
+      - wiki
+      # Chinese
+      - 文档
+      - 指南
+      - 教程
+      - 参考
+      - 手册
+      - 说明
+
+engineer:
+  fullstack:
+    keywords:
+      # General implementation (not specific to frontend/backend)
+      - implement
+      - create
+      - build
+      - develop
+      - add feature
+      - feature
+      - integration
+      - workflow
+      # Chinese
+      - 实现
+      - 创建
+      - 构建
+      - 开发
+      - 添加功能
+      - 功能
+      - 集成
+      - 工作流
+    default: true
+
+  frontend:
+    keywords:
+      # UI/UX
+      - ui
+      - ux
+      - interface
+      - page
+      - view
+      - component
+      - button
+      - form
+      - input
+      - modal
+      - dialog
+      - menu
+      - navbar
+      - navigation
+      - header
+      - footer
+      - sidebar
+      - layout
+      - responsive
+      - mobile
+      # Styling
+      - style
+      - css
+      - scss
+      - sass
+      - tailwind
+      - styled-components
+      - theme
+      - color
+      - font
+      - animation
+      # Frontend frameworks
+      - react
+      - vue
+      - angular
+      - svelte
+      - nextjs
+      - nuxt
+      # Frontend concepts
+      - client-side
+      - browser
+      - dom
+      - render
+      - hydration
+      # Chinese
+      - 界面
+      - 页面
+      - 组件
+      - 按钮
+      - 表单
+      - 样式
+      - 前端
+      - 客户端
+
+  backend:
+    keywords:
+      # Server/API
+      - api
+      - endpoint
+      - route
+      - server
+      - backend
+      - microservice
+      # Database
+      - database
+      - db
+      - sql
+      - query
+      - schema
+      - table
+      - collection
+      - mongodb
+      - postgresql
+      - mysql
+      - redis
+      - orm
+      - prisma
+      - sequelize
+      # Authentication
+      - auth
+      - authentication
+      - authorization
+      - login
+      - logout
+      - token
+      - jwt
+      - session
+      - oauth
+      - password
+      # Backend concepts
+      - server-side
+      - middleware
+      - controller
+      - service
+      - model
+      - validation
+      - business logic
+      # Chinese
+      - 接口
+      - 路由
+      - 服务器
+      - 后端
+      - 数据库
+      - 查询
+      - 认证
+      - 授权
+      - 登录
+      - 中间件
+
+tester:
+  unit:
+    keywords:
+      # Testing general
+      - test
+      - tests
+      - testing
+      - verify
+      - check
+      - validate
+      # Unit testing
+      - unit test
+      - unit tests
+      - jest
+      - mocha
+      - vitest
+      - pytest
+      # Chinese
+      - 测试
+      - 验证
+      - 检查
+      - 单元测试
+    default: true
+
+  integration:
+    keywords:
+      # Integration testing
+      - integration
+      - integration test
+      - api test
+      - endpoint test
+      - service test
+      # Chinese
+      - 集成测试
+      - 接口测试
+
+  e2e:
+    keywords:
+      # E2E testing
+      - e2e
+      - end-to-end
+      - cypress
+      - playwright
+      - selenium
+      - user flow
+      - user journey
+      # Chinese
+      - 端到端
+      - 端到端测试
+      - 用户流程
+
+# ============================================================
+# Extensibility Hooks (Phase 2)
+# ============================================================
+
+# Uncomment these sections when implementing Phase 2 features
+
+# patterns:
+#   # Regex patterns for more complex matching
+#   frontend:
+#     - "add .* to .* page"
+#     - "update .* interface"
+#     - "style .* component"
+#   backend:
+#     - "optimize .* query"
+#     - "implement .* endpoint"
+#     - "fix .* api"
+
+# weights:
+#   # Keyword weights for confidence scoring
+#   high_confidence: 1.0
+#   medium_confidence: 0.7
+#   low_confidence: 0.4
+
+# confidence_threshold: 0.7  # Minimum confidence to trust routing
+
+# fallback_strategy: "ask_user"  # ask_user | default_agent | suggest_options
+
+# ============================================================
+# Notes
+# ============================================================
+
+# MVP (v0.1.0):
+# - Simple keyword matching (substring search)
+# - No confidence scoring
+# - No pattern matching
+# - Fallback to engineer:fullstack
+
+# Phase 2:
+# - Add regex pattern matching
+# - Add confidence scoring with weights
+# - Add user confirmation for low confidence
+# - Add multi-language NLP support
+
+# Phase 3:
+# - ML-based classification
+# - Learn from user corrections
+# - Context-aware routing (consider project type)
