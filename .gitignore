@@ -44,6 +44,9 @@ htmlcov/
 config.local.yaml
 .env
 
+# Claude Code settings (user-specific)
+.claude/settings.local.json
+
 # Temporary files
 *.tmp
 *.bak
