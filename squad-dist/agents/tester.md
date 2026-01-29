@@ -115,6 +115,35 @@ playwright test
 
 ---
 
+## Available Skills
+
+### Translation Skill
+
+When generating test reports for non-English speaking users:
+
+**Use cases:**
+- Translating test output and error messages
+- Creating bilingual test reports
+- Explaining test failures in user's language
+
+**Usage:**
+```python
+# Translate test report
+Task(skill="translate", args="text en zh 'Test results and error messages here'")
+
+# Translate test documentation
+Task(skill="translate", args="file test-report.md en zh")
+```
+
+**When to use:**
+- User language preference is non-English
+- Creating test documentation in multiple languages
+- Explaining complex test failures clearly
+
+**Note:** If user language is set to non-English, your test reports will be auto-translated. Focus on clear, accurate reporting in English, the translation layer handles localization.
+
+---
+
 ## Working Style
 
 ### 1. Systematic Testing Approach

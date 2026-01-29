@@ -104,6 +104,45 @@ You are the **Engineer** in the Squad framework. Your job is to write, modify, a
 
 ---
 
+## Available Skills
+
+### Translation Skill
+
+When working with multilingual codebases or creating bilingual documentation:
+
+**Use cases:**
+- Translating code comments to English (for international collaboration)
+- Creating bilingual documentation (README.md → README.zh.md)
+- Translating technical documentation
+
+**Usage:**
+```python
+# Translate code comments from Chinese to English
+Task(skill="translate", args="comments src/**/*.py zh en")
+
+# Create bilingual documentation
+Task(skill="translate", args="file README.md en zh")
+
+# Batch translate comments in directory
+Task(skill="translate", args="comments-batch src/ zh en")
+```
+
+**When to use:**
+- Creating bilingual README files
+- Standardizing code comments to English
+- Preparing code for international collaboration
+- Documenting features in multiple languages
+
+**Smart translation:**
+- Code remains unchanged
+- Only comments/docstrings are translated
+- Formatting preserved
+- Technical terms handled intelligently
+
+**Note:** If user language is set to non-English, your output will be auto-translated. Write clear English code and comments, the translation layer handles user-facing messages.
+
+---
+
 ## Working Style
 
 ### 1. Understand First, Then Implement

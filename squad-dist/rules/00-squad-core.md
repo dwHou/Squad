@@ -128,6 +128,29 @@ If no clear match, default to **Engineer:fullstack**
 /squad [task description]
 ```
 
+### Configuration
+```bash
+/squad config          # Interactive configuration wizard
+```
+
+Launches multi-round question wizard to configure:
+- Language preference (中文 / English)
+- Permission level (Conservative / Balanced / Autonomous)
+
+### Reflection & Evolution
+```bash
+/squad reflect         # Analyze performance and evolve
+/squad 回顾           # Chinese alias
+/squad rollback <id>   # Rollback evolution changes
+```
+
+Self-reflection and continuous improvement:
+- Analyze conversation performance (what went well/could be better)
+- Identify improvement opportunities
+- Generate high-confidence proposals (low regression risk)
+- Apply approved changes cautiously
+- Full backup and rollback support
+
 ### Agent Specification
 ```bash
 /squad @researcher explore authentication
@@ -204,14 +227,145 @@ Task: "Add login feature"
 
 ---
 
+## Permission System
+
+Squad supports three permission levels to control agent autonomy:
+
+### 🛡️ Conservative (保守)
+**Philosophy:** Safety first, manual control
+
+- ✋ Ask before every file operation
+- ✋ Ask before all commands
+- ✋ Ask before git operations
+- ✅ Auto-allow read-only operations
+
+**Best for:** Learning, critical projects, strict change management
+
+### ⚖️ Balanced (平衡) - **Recommended**
+**Philosophy:** Trust but verify critical operations
+
+- ✅ Auto-allow common operations (create/edit files, run tests, git commit)
+- ✋ Ask before deleting files
+- ✋ Ask before git push
+- ✋ Ask before destructive commands
+- ✋ Ask before config changes
+
+**Best for:** Daily development, most projects
+
+### 🚀 Autonomous (自主)
+**Philosophy:** Full automation, minimal interruption
+
+- ✅ Auto-allow all operations
+- ⚠️ Detailed logging enabled
+- 🛟 Auto-backup before destructive operations
+- 📝 Clear commit messages
+
+**Best for:** Long-running projects (24+ hours), prototyping, solo projects
+
+**⚠️ Use with caution** - requires high trust level
+
+---
+
+## Permission Configuration
+
+Configure via interactive wizard:
+```bash
+/squad config
+```
+
+Or manually edit `~/.squad/config.yaml`:
+```yaml
+permission_level: balanced  # conservative | balanced | autonomous
+
+permissions:
+  allow_file_create: true
+  allow_file_edit: true
+  allow_file_delete: false
+  allow_git_commit: true
+  allow_git_push: false
+  allow_commands: true
+  allow_destructive_commands: false
+  allow_config_changes: false
+```
+
+---
+
+## Skills System
+
+**Skills** are specialized capabilities that agents can invoke to perform specific tasks. Unlike agents (which handle complete workflows), skills provide focused utilities.
+
+### Available Skills
+
+#### 1. Translate / 翻译
+
+**Purpose:** Intelligent translation for code, documentation, and natural language
+
+**Capabilities:**
+- Full text translation
+- Code comment translation
+- Paper translation (academic)
+- Smart interactive translation (auto-enabled when user language ≠ English)
+
+**Usage by agents:**
+```python
+# Researcher reading English paper
+Task(skill="translate", args="paper arxiv-paper.pdf en zh")
+
+# Engineer translating code comments
+Task(skill="translate", args="comments src/**/*.py zh en")
+```
+
+**Auto-injection:**
+When user language preference is set to non-English (e.g., `language: zh`), Squad automatically injects translation instructions into agent prompts:
+- Agent thinks/analyzes in English (for accuracy)
+- Agent outputs are auto-translated to user's language
+- Code, paths, and technical identifiers remain unchanged
+- Smart bilingual format for technical terms
+
+**Configuration:**
+See `~/.squad/skills/translate.md` for detailed documentation.
+
+---
+
+### Skill Invocation
+
+**From user:**
+```bash
+/translate <subcommand> [options]
+```
+
+**From agent (programmatic):**
+```python
+Task(skill="translate", args="...")
+```
+
+### When Agents Should Use Skills
+
+| Agent | Skill | Use Case |
+|-------|-------|----------|
+| Researcher | translate | Reading foreign language papers/docs |
+| Engineer | translate | Creating bilingual documentation |
+| Any | translate | User language ≠ English (auto) |
+
+---
+
 ## Configuration Files
 
 ```
 ~/.claude/rules/00-squad-core.md    # This file (auto-loaded)
 ~/.claude/agents/                    # Agent definitions
-~/.claude/commands/squad.md          # /squad command
-~/.squad/router.yaml                 # Routing rules (extensible)
-~/.squad/config.yaml                 # User config
+~/.claude/commands/
+    ├── squad.md                     # /squad command
+    ├── config.md                    # /squad config command
+    └── reflect.md                   # /squad reflect command
+~/.claude/skills/                    # Skill definitions
+~/.squad/
+    ├── config.yaml                  # User config (language, permissions)
+    ├── router.yaml                  # Routing rules (extensible)
+    ├── translation.yaml             # Translation config (optional)
+    ├── evolution/                   # Evolution logs and history
+    ├── backups/                     # Backup files before changes
+    └── logs/                        # Action logs (autonomous mode)
 ```
 
 ---

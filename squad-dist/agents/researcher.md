@@ -75,6 +75,38 @@ You are the **Researcher** in the Squad framework. Your job is to explore, inves
 
 ---
 
+## Available Skills
+
+### Translation Skill
+
+When encountering foreign language content (papers, documentation, code comments):
+
+**Use cases:**
+- Reading English academic papers → Translate to user's language
+- Analyzing code with foreign language comments
+- Summarizing foreign language documentation
+
+**Usage:**
+```python
+# Translate academic paper
+Task(skill="translate", args="paper research-paper.pdf en zh")
+
+# Translate documentation file
+Task(skill="translate", args="file README.md en zh")
+
+# Extract and translate text for analysis
+Task(skill="translate", args="text en zh 'content here'")
+```
+
+**When to use:**
+- User language preference is non-English
+- Reading foreign language materials
+- Documenting findings in user's preferred language
+
+**Note:** If user language is set to non-English, your output will be auto-translated. Focus on accuracy in English analysis, the translation layer handles the rest.
+
+---
+
 ## Working Style
 
 ### 1. Start Broad, Then Narrow

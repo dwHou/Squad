@@ -1,0 +1,48 @@
+# Squad Configuration
+# Version: 0.1.0
+
+# Language preference (en | zh)
+# Run "/squad config" to configure interactively
+language: en
+
+# Verbose mode (show detailed routing)
+verbose: false
+
+# Permission level (conservative | balanced | autonomous)
+# - conservative: Ask before every operation (safest)
+# - balanced: Auto-allow common operations, ask for critical ones (recommended)
+# - autonomous: Full automation, no interruptions (for long-running projects)
+permission_level: balanced
+
+# Permission settings (auto-generated based on permission_level)
+# These control what agents can do without asking for permission
+permissions:
+  # File operations
+  allow_file_create: true        # Create new files
+  allow_file_edit: true          # Edit existing files
+  allow_file_delete: false       # Delete files (always ask in balanced mode)
+
+  # Git operations
+  allow_git_commit: true         # Commit changes
+  allow_git_push: false          # Push to remote (always ask in balanced mode)
+
+  # Commands
+  allow_commands: true           # Run commands (tests, builds, installs)
+  allow_destructive_commands: false  # Destructive commands (rm -rf, reset --hard)
+
+  # Configuration
+  allow_config_changes: false    # Modify config files (.env, package.json)
+
+# Autonomous mode settings (only active when permission_level: autonomous)
+autonomous:
+  enable_auto_backup: true       # Backup files before modification
+  enable_detailed_logging: true  # Log all actions
+  log_file: ~/.squad/logs/actions.log
+  backup_dir: ~/.squad/backups
+
+# Model preferences (optional overrides)
+# Uncomment to override default models for specific agents
+# models:
+#   researcher: haiku    # Fast, cost-efficient for exploration
+#   engineer: sonnet     # Balanced for implementation
+#   tester: haiku        # Fast for running tests

@@ -21,6 +21,14 @@ When the user types `/squad`, this command activates the Squad framework and han
 # Agent specification
 /squad @agent[:tag] [task description]
 
+# Configuration
+/squad config              # Interactive configuration wizard
+
+# Reflection & Evolution
+/squad reflect             # Analyze performance and evolve
+/squad 回顾                # Chinese alias for reflect
+/squad rollback <session>  # Rollback evolution changes
+
 # Options
 /squad --help
 /squad --verbose [task]
@@ -42,6 +50,73 @@ When the user types `/squad`, this command activates the Squad framework and han
 ---
 
 ### Step 2: Handle Special Commands
+
+#### `config` Sub-command
+
+When user types `/squad config`, launch interactive configuration wizard:
+
+```bash
+/squad config
+```
+
+**Action:**
+1. Display welcome message
+2. Use `AskUserQuestion` for language preference
+3. Use `AskUserQuestion` for permission level
+4. Update `~/.squad/config.yaml` with answers
+5. Display confirmation with settings summary
+
+**See:** `~/.claude/commands/config.md` for full implementation details
+
+---
+
+#### `reflect` Sub-command / `回顾`
+
+When user types `/squad reflect` or `/squad 回顾`, analyze conversation performance and suggest improvements:
+
+```bash
+/squad reflect
+/squad 回顾      # Chinese alias
+```
+
+**Action:**
+1. Analyze current conversation:
+   - What went well ✅
+   - What could be better ⚠️
+   - Satisfying responses 😊
+   - Unsatisfying responses 😐
+2. Identify improvement opportunities
+3. Generate high-confidence proposals
+4. Use `AskUserQuestion` to request approval
+5. Apply approved changes (if any) with logging and backup
+6. Display evolution summary
+
+**Safety:**
+- Only high-confidence changes by default
+- All changes backed up before modification
+- Atomic transactions (all or nothing)
+- Full audit trail in `~/.squad/evolution/`
+
+**See:** `~/.claude/commands/reflect.md` for full implementation details
+
+---
+
+#### `rollback` Sub-command
+
+Rollback evolution changes:
+
+```bash
+/squad rollback <session_id>   # Rollback specific session
+/squad rollback last            # Rollback last evolution
+```
+
+**Action:**
+1. Read evolution log
+2. Restore backup files
+3. Verify restoration
+4. Log rollback action
+
+---
 
 #### `--help` Flag
 
@@ -189,17 +264,108 @@ LEARN MORE
 Use the Task tool to call the selected agent:
 
 ```python
+# Step 5.1: Check language preference
+config = read_yaml("~/.squad/config.yaml")
+user_language = config.get("language", "en")
+
+# Step 5.2: Build prompt with translation injection
+prompt_parts = []
+
+# Add translation instruction if user language is not English
+if user_language != "en":
+    translation_prompt = f"""
+## 🌐 Translation Instruction
+
+User language preference: {get_language_name(user_language)}
+
+**CRITICAL: You MUST follow these translation rules:**
+
+1. **Generate your analysis/thinking in English** (for clarity and accuracy)
+2. **Translate ALL user-facing output to {get_language_name(user_language)}** before responding
+3. **🚨 NEVER modify code:**
+   - Code snippets MUST remain unchanged
+   - Function/variable/class names MUST remain unchanged
+   - Only comments/docstrings can be translated
+   - File paths stay as-is (e.g., src/utils.js)
+   - Command syntax stays as-is (e.g., git commit)
+   - URLs and links stay as-is
+
+4. **Smart translation with bilingual format for professional terms:**
+   - Use format: `译文 (Original)` for technical/professional terms
+   - Examples (zh):
+     - "智能体 (agent)"
+     - "路由器 (router)"
+     - "应用程序接口 (API)"
+     - "身份验证 (authentication)"
+     - "管道 (pipeline)"
+   - Well-established terms: translate only (e.g., "文件", "函数", "用户")
+
+5. **When to use bilingual format:**
+   - Technical jargon (API, JWT, OAuth, microservices)
+   - Domain-specific terms (orchestration, serialization)
+   - Ambiguous translations (context → 上下文/语境)
+   - Terms commonly used in English in the industry
+   - When precision is critical
+
+6. **Error messages:**
+   - Translate the explanation
+   - Keep original error in code block for reference
+
+**Example Output (zh):**
+```
+✅ Good:
+"我找到了 3 个文件匹配您的查询:
+- src/auth/login.js
+- src/auth/register.js
+- src/auth/utils.js
+
+主要的身份验证 (authentication) 逻辑在 `authenticateUser()` 函数中实现，
+定义在 src/auth/login.js:42。该函数使用 JWT 令牌 (token) 进行验证。"
+
+❌ Bad (not translated):
+"I found 3 files matching your query..."
+
+❌ Bad (code modified):
+"我找到了 3 个文件:
+- 源/认证/登录.js  ← WRONG! Never translate paths/code
+- `认证用户()` 函数  ← WRONG! Never translate function names
+
+❌ Bad (missing original terms):
+"该函数使用 JWT 令牌进行验证。"
+(Should be: "JWT 令牌 (token)")
+```
+
+---
+"""
+    prompt_parts.append(translation_prompt)
+
+# Add tag context
+prompt_parts.append(f"[TAG: {tag}]")
+
+# Add task description
+prompt_parts.append(task_description)
+
+# Combine all parts
+full_prompt = "\n\n".join(prompt_parts)
+
+# Step 5.3: Invoke agent
 Task(
     subagent_type="engineer",
-    prompt=f"[TAG: frontend]\n\n{task_description}",
+    prompt=full_prompt,
     model="sonnet",  # or "haiku", "opus"
     description="Implement feature"
 )
 ```
 
-**Tag injection:**
-- Prepend tag context to agent prompt
-- Agent reads tag and adjusts behavior
+**Prompt injection order:**
+1. Translation instruction (if user language ≠ en)
+2. Tag context
+3. Task description
+
+**Agent behavior:**
+- Agent reads translation instruction first
+- Applies smart translation rules
+- Generates response in user's preferred language
 - See agent definition files for tag-specific instructions
 
 ---

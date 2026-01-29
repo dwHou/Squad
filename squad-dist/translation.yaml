@@ -1,0 +1,143 @@
+# Squad Translation Configuration
+# Version: 0.1.0
+
+# Translation engine (future: support multiple engines)
+engine: claude  # claude | openai | google | deepl
+model: sonnet   # for claude engine
+fallback: google  # fallback engine if primary fails
+
+# Quality settings
+default_quality: 2  # 1 (literal) | 2 (context-aware) | 3 (professional)
+preserve_formatting: true  # Keep markdown, code blocks, etc.
+
+# Terminology glossary
+# Add project-specific or domain-specific term translations
+glossary:
+  # Squad-specific terms
+  - source: "agent"
+    target_zh: "智能体"
+    target_ja: "エージェント"
+
+  - source: "orchestration"
+    target_zh: "编排"
+    target_ja: "オーケストレーション"
+
+  - source: "router"
+    target_zh: "路由器"
+    target_ja: "ルーター"
+
+  - source: "skill"
+    target_zh: "技能"
+    target_ja: "スキル"
+
+  # Common tech terms
+  - source: "pipeline"
+    target_zh: "管道"
+    target_ja: "パイプライン"
+
+  - source: "token"
+    target_zh: "令牌"
+    target_ja: "トークン"
+
+  - source: "prompt"
+    target_zh: "提示词"
+    target_ja: "プロンプト"
+
+  # Add your custom terms here
+  # - source: "your_term"
+  #   target_zh: "你的术语"
+
+# Smart translation rules
+smart_translation:
+  # Technical identifiers (never translate)
+  preserve_patterns:
+    - "^[a-zA-Z_][a-zA-Z0-9_]*$"  # Variable names
+    - "^[A-Z][a-zA-Z0-9]*$"  # Class names
+    - "\\.[a-z]{2,4}$"  # File extensions
+
+  # Bilingual format for technical terms
+  bilingual_terms: true  # e.g., "agent (智能体)"
+
+  # Keep original for these
+  keep_original:
+    - code_blocks: true
+    - file_paths: true
+    - urls: true
+    - commands: true
+
+# Language-specific settings
+languages:
+  zh:
+    name: "Chinese"
+    use_simplified: true  # Simplified Chinese
+    technical_term_format: "{english} ({chinese})"
+
+  en:
+    name: "English"
+    technical_term_format: "{english}"
+
+  ja:
+    name: "Japanese"
+    technical_term_format: "{english} ({japanese})"
+
+# Performance settings
+cache:
+  enabled: true
+  ttl: 3600  # seconds (1 hour)
+  max_size: 1000  # max cached translations
+
+# Batch processing
+batch:
+  enabled: true
+  max_batch_size: 50  # max items per batch
+  timeout: 30  # seconds
+
+# Comment translation settings
+comment_translation:
+  detect_language: true  # Auto-detect comment language
+  preserve_code: true    # Never translate code in comments
+  preserve_formatting: true  # Keep comment style (# vs // vs /* */)
+
+  # Programming language support
+  languages:
+    python:
+      inline: "#"
+      block: ["'''", '"""']
+
+    javascript:
+      inline: "//"
+      block: ["/*", "*/"]
+
+    go:
+      inline: "//"
+      block: ["/*", "*/"]
+
+    rust:
+      inline: "//"
+      doc: "///"
+      block: ["/*", "*/"]
+
+    java:
+      inline: "//"
+      doc: "/**"
+      block: ["/*", "*/"]
+
+# Paper translation settings (future)
+paper_translation:
+  preserve_citations: true
+  preserve_equations: true
+  preserve_figures: true
+  generate_glossary: true
+
+  # Citation styles
+  citation_styles:
+    - APA
+    - MLA
+    - IEEE
+    - Chicago
+
+# Logging
+logging:
+  enabled: true
+  level: info  # debug | info | warning | error
+  log_file: ~/.squad/logs/translation.log
