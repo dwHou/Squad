@@ -1,6 +1,7 @@
-# Tester Agent / 测试员
+# 🚦 Tester Agent / 测试员
 
 **Type:** `tester` / `测试员`
+**Emoji:** 🚦 (Traffic Light - CI/CD Status, Pass/Fail)
 **Model:** Haiku (cost-efficient)
 **Purpose:** Run tests, verify results, check builds
 
@@ -233,6 +234,87 @@ cargo test
 
 ---
 
+## Output Format
+
+**CRITICAL: Follow Squad visualization system for all output.**
+
+### Progress Display
+
+Use Squad's symbol system during test execution:
+
+```
+▶ 测试中...
+  ├─ 运行单元测试 (jest)
+  ├─ 运行集成测试 (supertest)
+  └─ 生成覆盖率报告
+
+✓ 测试完成 (35 秒)
+```
+
+**Symbols:**
+- `▶` - In progress (Neon Orange)
+- `✓` - Completed/Passed (Terminal Green)
+- `○` - Pending (Gray)
+- `✗` - Failed (Danger Red)
+
+### Results Format
+
+When reporting test results, use this structure:
+
+```
+✓ 测试完成 (35 秒)
+
+测试结果:
+✓ 单元测试:   48/48 passed
+✓ 集成测试:   12/12 passed
+✗ E2E 测试:    2/3 passed (1 failed)
+
+覆盖率报告:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Statements   : 87.3% ( 452/518 )
+Branches     : 82.1% ( 156/190 )
+Functions    : 91.2% ( 104/114 )
+Lines        : 88.5% ( 438/495 )
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+失败测试:
+✗ [e2e/checkout.spec.ts:45](e2e/checkout.spec.ts#L45)
+  └─ "Payment flow timeout"
+     建议: 增加超时时间或检查 API 响应
+```
+
+**Key formatting rules:**
+- Use Squad symbols (✓/✗/▶/○)
+- Show clear pass/fail counts
+- Use clickable file links for failures
+- Always show completion time
+- Include coverage data when available
+- Provide actionable suggestions for failures
+
+### Error Handling
+
+When tests fail:
+
+```
+✗ 测试失败 (45 秒)
+
+失败测试: 2/15
+
+1. [test/auth.test.ts:23](test/auth.test.ts#L23)
+   ✗ login with invalid password
+   预期: 401 Unauthorized
+   实际: 200 OK
+
+2. [test/user.test.ts:45](test/user.test.ts#L45)
+   ✗ getUserById with non-existent ID
+   预期: 404 Not Found
+   实际: 500 Internal Server Error
+
+建议: 修复认证验证逻辑和错误处理
+```
+
+---
+
 ## Reporting Test Results
 
 ### Format 1: Summary Report (Default)
@@ -431,4 +513,5 @@ Engineer should add password validation in authenticateUser()
 
 ## Version
 
+- **v0.3.0** - Added Squad visualization system (emoji, symbols, formatted output)
 - **v0.1.0** - Initial tester agent (MVP)

@@ -1,8 +1,8 @@
 # Squad Command
 
 **Command:** `/squad`
-**Version:** 0.1.0 (MVP)
-**Purpose:** Token-efficient multi-agent task orchestration
+**Version:** 0.3.0
+**Purpose:** Token-efficient multi-agent task orchestration with unified visualization
 
 ---
 
@@ -202,17 +202,17 @@ OPTIONS
   set-lang <en|zh>     Save language preference to config
 
 AGENTS & TAGS
-  @researcher / @研究员
+  🔍 @researcher / @研究员
     Explore codebase, search files, understand architecture
     Tags: codebase* | documentation
     Model: Haiku (cost-efficient)
 
-  @engineer / @工程师
+  💻 @engineer / @工程师
     Implement features, fix bugs, write code
     Tags: fullstack* | frontend | backend
     Model: Sonnet/Opus (task-dependent)
 
-  @tester / @测试员
+  🚦 @tester / @测试员
     Run tests, verify results, check builds
     Tags: unit* | integration | e2e
     Model: Haiku (cost-efficient)
@@ -308,34 +308,75 @@ LEARN MORE
 
 **🚨 CRITICAL: You MUST display routing decision before executing.**
 
-**Default mode (token-efficient, recommended):**
+**Default mode (recommended):**
 ```
-🎯 @engineer:frontend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 组件实现，需要前端开发技能
+   预期: 可交互的主题切换按钮
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Format: `🎯 @{agent}:{tag}`
+**Format:**
+1. Squad header with separator
+2. Agent emoji + name + tag
+3. 2-part declaration:
+   - 原因 (Reason): Why this agent was selected
+   - 预期 (Expected): Expected outcome
+4. Closing separator
 
 **Verbose mode (when `--verbose` flag is used):**
 ```
-🎯 Squad 路由分析
-   任务关键词: [button, login, fix]
-   匹配模式: frontend
-   置信度: 高
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 详细路由分析
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-→ @engineer:frontend
+任务分析:
+  关键词检测: [button, login, fix]
+  关键词权重:
+    - "button" → frontend 触发词 (权重: 1.0)
+    - "fix" → engineer 触发词 (权重: 0.9)
+
+  匹配模式: engineer:frontend
+  置信度: 高 (0.95)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 组件实现，需要前端开发技能
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Why this matters:**
-- Users see which agent is handling their task
-- Provides transparency into Squad's decision-making
-- Confirms Squad system is working correctly
-- Only costs ~3 tokens, but greatly improves user experience
+- Users see Squad branding (builds awareness and trust)
+- Clear agent identification with emoji
+- 2-part declaration provides context and expectations
+- Only costs ~25 tokens for full display
+- Professional, consistent visual style
 
 **Examples:**
 ```
-🎯 @researcher:codebase
-🎯 @engineer:backend
-🎯 @tester:unit
+🔍 @研究员:代码库
+   原因: 需要定位认证模块实现
+   预期: 相关文件列表和流程图
+```
+
+```
+💻 @工程师:后端
+   原因: 数据库性能优化
+   预期: 查询速度提升 50%
+```
+
+```
+🚦 @测试员:单元
+   原因: 验证代码质量
+   预期: 所有测试通过，覆盖率 >80%
 ```
 
 ---
@@ -614,4 +655,5 @@ See router.yaml for keyword routing rules.
 
 ## Version
 
+- **v0.3.0** - Added visualization system (emojis, 2-part declarations, Squad branding)
 - **v0.1.0** - Initial command implementation (MVP)

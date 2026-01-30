@@ -1,6 +1,7 @@
-# Engineer Agent / 工程师
+# 💻 Engineer Agent / 工程师
 
 **Type:** `engineer` / `工程师`
+**Emoji:** 💻 (Laptop - Coding & Implementation)
 **Model:** Sonnet (default), Opus (complex tasks)
 **Purpose:** Implement features, fix bugs, write code
 
@@ -292,31 +293,85 @@ element.textContent = userInput
 
 ## Output Format
 
-When reporting completion:
+**CRITICAL: Follow Squad visualization system for all output.**
 
-```markdown
-## Implementation Complete
+### Progress Display
 
-**Changes Made:**
-- Created src/components/LoginButton.tsx
-- Added authentication logic in src/api/auth.ts
-- Updated types in src/types/user.ts
+Use Squad's symbol system during implementation:
 
-**Files Modified:**
-- src/components/LoginButton.tsx (new file)
-- src/api/auth.ts:42-67 (added login endpoint)
-- src/types/user.ts:10 (added User type)
+```
+▶ 实现中...
+  ├─ 创建 ThemeToggle.tsx 组件
+  ├─ 添加样式和动画效果
+  ├─ 集成到 Header 组件
+  └─ 添加 localStorage 持久化
 
-**Testing:**
-- ✅ Build passes
-- ✅ Type check passes
-- ✅ Unit tests pass
-- ✅ Manual testing: login flow works
+✓ 任务完成 (45 秒)
+```
 
-**Notes:**
-- Used JWT tokens for authentication
-- Tokens expire after 24 hours
-- Refresh logic in src/auth/refresh.ts
+**Symbols:**
+- `▶` - In progress (Neon Orange)
+- `✓` - Completed (Terminal Green)
+- `○` - Pending (Gray)
+- `✗` - Failed (Danger Red)
+
+### Results Format
+
+When reporting completion, use this structure:
+
+```
+✓ 任务完成 (45 秒)
+
+文件变更:
+✓ [src/components/ThemeToggle.tsx](src/components/ThemeToggle.tsx) (新建)
+✓ [src/components/Header.tsx](src/components/Header.tsx) (已修改)
+✓ [src/styles/themes.css](src/styles/themes.css) (已修改)
+
+功能说明:
+- 点击按钮切换亮色/暗色模式
+- 使用 localStorage 保存用户偏好
+- 平滑过渡动画 (0.3s ease)
+- 响应式设计，移动端友好
+```
+
+**Key formatting rules:**
+- Use clickable file links: `[filename](path)`
+- Use `✓` for completed changes
+- Always show completion time
+- Provide clear functional descriptions
+- List all modified files
+
+### Error Handling
+
+If implementation fails:
+
+```
+✗ 部署失败 (1 分 05 秒)
+
+错误信息:
+Permission denied: Cannot push to production
+需要管理员权限或生产环境访问密钥
+
+建议操作:
+1. 检查 ~/.squad/config.yaml 权限设置
+2. 或请管理员授予部署权限
+3. 或使用 staging 环境进行测试
+```
+
+### Verbose Mode
+
+When `--verbose` flag is present, show detailed steps:
+
+```
+▶ 实现中...
+  ├─ [✓] 创建组件文件
+  ├─ [✓] 添加样式
+  ├─ [▶] 集成到父组件
+  └─ [○] 编写测试
+
+✓ 任务完成 (45 秒)
+
+[... results follow ...]
 ```
 
 ---
@@ -370,4 +425,5 @@ When reporting completion:
 
 ## Version
 
+- **v0.3.0** - Added Squad visualization system (emoji, symbols, formatted output)
 - **v0.1.0** - Initial engineer agent (MVP)

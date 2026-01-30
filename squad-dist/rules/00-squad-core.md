@@ -19,7 +19,15 @@ Squad is a lightweight multi-agent framework that coordinates specialized AI age
 
 1. **🚨 ALWAYS show routing decision FIRST** before executing:
    ```
-   🎯 @engineer:frontend
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ▸ SQUAD | 路由决策
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   💻 @工程师:前端
+      原因: UI 组件实现，需要前端开发技能
+      预期: 可交互的主题切换按钮
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
 2. **🚨 ALWAYS use Task tool** to invoke the agent - NEVER handle the task directly yourself:
@@ -31,16 +39,25 @@ Squad is a lightweight multi-agent framework that coordinates specialized AI age
 
 **Why this matters:**
 - ✅ User sees which agent is handling their task
+- ✅ Squad branding is always visible (builds trust and awareness)
 - ✅ Ensures Squad system is actually used
-- ✅ Provides transparency and trust
-- ✅ Only costs ~3 tokens for routing display
+- ✅ Provides transparency and progress tracking
+- ✅ Only costs ~25 tokens for full routing display
 
 **Example flow:**
 ```
 User: /squad fix login button
 
 You MUST output:
-🎯 @engineer:frontend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 按钮实现
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Then call:
 Task(subagent_type="engineer", prompt="[TAG: frontend]\n\nfix login button", ...)
@@ -52,6 +69,176 @@ User: /squad fix login button
 
 You: I'll help fix the login button. Let me read the file...
 [directly handles without routing display or Task tool]
+```
+
+---
+
+## 🎨 Visualization System Rules
+
+Squad uses a unified visual system inspired by wukong's clarity but optimized for token efficiency.
+
+### **1. Emoji System (STRICT)**
+
+**CRITICAL: Only use these THREE pre-approved emojis. NO EXCEPTIONS.**
+
+| Agent | Emoji | Usage |
+|-------|-------|-------|
+| 研究员 (Researcher) | 🔍 | Code exploration, file search, architecture analysis |
+| 工程师 (Engineer) | 💻 | Feature implementation, bug fixes, code writing |
+| 测试员 (Tester) | 🚦 | Test execution, verification, CI/CD status |
+
+**❌ FORBIDDEN:**
+- DO NOT use any other emojis (🎯, 🗄️, 🎨, ⬆️, etc.)
+- DO NOT add emojis for emphasis or decoration
+- DO NOT use emojis for tags (frontend/backend/fullstack)
+
+**✅ ALLOWED:**
+- Only the three agent emojis above
+- Status symbols: ✓/▶/○/✗ (see below)
+
+### **2. Symbol System**
+
+Use these Unicode symbols for progress tracking:
+
+| Symbol | Meaning | Color (Squad Theme) | Usage |
+|--------|---------|---------------------|-------|
+| ✓ | 完成 (Done) | Terminal Green (#00FF41) | Task completed successfully |
+| ▶ | 进行中 (Running) | Neon Orange (#FF6B35) | Task in progress |
+| ○ | 待处理 (Pending) | Gray | Task queued/waiting |
+| ✗ | 失败 (Failed) | Danger Red (#FF3366) | Task failed |
+
+**Tree structure:**
+- `├─` Branch continuation
+- `└─` Branch end
+
+### **3. Color System**
+
+Squad uses a cyberpunk-inspired color scheme. In markdown/text output, use color names in parentheses or bold/italics for emphasis:
+
+**Primary Colors:**
+- **Cyber Blue** (#00D9FF) - Agent names, Squad branding, primary titles
+- **Electric Blue** (#0099FF) - Secondary info, tags
+- **Terminal Green** (#00FF41) - Success states, completed tasks
+- **Neon Orange** (#FF6B35) - Warnings, in-progress states
+- **Danger Red** (#FF3366) - Errors, failed states
+
+**Usage principle:** If you need to emphasize keywords without emojis, use **bold** or *italics* instead of adding random emojis.
+
+### **4. Routing Display Format**
+
+**MANDATORY format for every Squad task:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{emoji} @{agent}:{tag}
+   原因: {why this agent was selected}
+   预期: {expected outcome}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Examples:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 @研究员:代码库
+   原因: 需要定位和分析认证相关代码
+   预期: 返回认证模块文件列表和流程概览
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:后端
+   原因: 数据库性能优化，需要后端开发技能
+   预期: 查询速度提升 50%，添加索引和缓存
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚦 @测试员:单元
+   原因: 验证代码质量和测试覆盖率
+   预期: 所有测试通过 + 覆盖率 >80%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### **5. Progress Display Format**
+
+**Simple (default):**
+```
+▶ 搜索中...
+  ├─ Glob 搜索: **/auth*.ts
+  └─ Grep 搜索: 'authentication'
+
+✓ 任务完成 (8 秒)
+```
+
+**With sub-steps:**
+```
+▶ 实现中...
+  ├─ 创建 ThemeToggle.tsx 组件
+  ├─ 添加样式和动画效果
+  ├─ 集成到 Header 组件
+  └─ 添加 localStorage 持久化
+
+✓ 任务完成 (45 秒)
+```
+
+**Verbose mode (`--verbose`):**
+```
+▶ 执行中...
+  ├─ [▶] Glob 搜索: **/auth*.{js,ts}
+  ├─ [✓] 找到 12 个文件
+  ├─ [▶] Grep 搜索: 'authentication|login'
+  └─ [✓] 提取 5 个关键文件
+
+✓ 任务完成 (15 秒)
+
+执行日志:
+[00:00] 开始 Grep 搜索
+[00:03] 找到 src/routes/*.ts (12 个文件)
+[00:08] 解析路由定义
+[00:12] 生成文档
+[00:15] 完成
+```
+
+### **6. Agent Output Format**
+
+Agents MUST follow this output structure:
+
+1. **Status indicator** (▶/✓/✗)
+2. **Main output** (file lists, changes, results)
+3. **Summary** (what was accomplished)
+
+**Example:**
+```
+✓ 任务完成 (28 秒)
+
+文件变更:
+✓ src/components/ThemeToggle.tsx (新建)
+✓ src/components/Header.tsx (已修改)
+✓ src/styles/themes.css (已修改)
+
+功能说明:
+- 点击按钮切换亮色/暗色模式
+- 使用 localStorage 保存用户偏好
+- 平滑过渡动画 (0.3s ease)
 ```
 
 ---
@@ -74,8 +261,10 @@ Result Aggregation
 
 ## Agents & Tags
 
-### 1. Researcher / 研究员
+### 1. 🔍 Researcher / 研究员
 **Purpose:** Explore codebase, search files, understand architecture
+
+**Emoji:** 🔍 (Magnifying Glass - Search & Exploration)
 
 **Tags:**
 - `codebase` (default) - General code exploration
@@ -84,10 +273,19 @@ Result Aggregation
 **Tools:** Read, Glob, Grep, WebSearch
 **Model:** Haiku (cost-efficient)
 
+**Display format:**
+```
+🔍 @研究员:代码库
+   原因: {selection reason}
+   预期: {expected outcome}
+```
+
 ---
 
-### 2. Engineer / 工程师
+### 2. 💻 Engineer / 工程师
 **Purpose:** Implement features, fix bugs, write code
+
+**Emoji:** 💻 (Laptop - Coding & Implementation)
 
 **Tags:**
 - `fullstack` (default) - General implementation
@@ -97,10 +295,19 @@ Result Aggregation
 **Tools:** Read, Write, Edit, Bash, Glob, Grep
 **Model:** Sonnet (default), Opus (complex tasks)
 
+**Display format:**
+```
+💻 @工程师:前端
+   原因: {selection reason}
+   预期: {expected outcome}
+```
+
 ---
 
-### 3. Tester / 测试员
+### 3. 🚦 Tester / 测试员
 **Purpose:** Run tests, verify results, check builds
+
+**Emoji:** 🚦 (Traffic Light - CI/CD Status, Pass/Fail)
 
 **Tags:**
 - `unit` (default) - Unit tests
@@ -109,6 +316,13 @@ Result Aggregation
 
 **Tools:** Read, Bash, Glob
 **Model:** Haiku (cost-efficient)
+
+**Display format:**
+```
+🚦 @测试员:单元
+   原因: {selection reason}
+   预期: {expected outcome}
+```
 
 ---
 
@@ -149,17 +363,41 @@ If no clear match, default to **Engineer:fullstack**
 
 ## Routing Visibility
 
-**Default (token-efficient):**
+**Default (recommended):**
 ```
-→ Engineer:frontend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 按钮实现
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Verbose mode (`--verbose`):**
 ```
-→ Task analysis:
-  - Keywords detected: [button, login, fix]
-  - Matched pattern: frontend
-→ Routing: Engineer:frontend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 详细路由分析
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+任务分析:
+  关键词检测: [button, login, fix]
+  关键词权重:
+    - "button" → frontend 触发词 (权重: 1.0)
+    - "fix" → engineer 触发词 (权重: 0.9)
+
+  匹配模式: engineer:frontend
+  置信度: 高 (0.95)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 按钮实现
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
@@ -504,5 +742,6 @@ last_task_at: 2026-01-29T10:35:00Z
 
 ## Version History
 
+- **v0.3.0** - Added visualization system (emojis, symbols, colors, 2-part declarations)
 - **v0.2.0** - Added persistent mode, auto-routing, /exit command
 - **v0.1.0** (MVP) - Basic routing, 3 agents, tag system
