@@ -11,9 +11,14 @@
 
 ## 什么是 Squad？
 
-**Squad** 是为 Claude Code 设计的轻量级多智能体框架。它不同于并行运行多个智能体（成本高昂！）的方式，Squad 使用**智能路由 (intelligent routing)** 和**串行执行 (serial execution)** 来高效协调专业化的智能体。
+**Squad** 是为 **Claude Code** 和 **Cursor IDE** 设计的轻量级多智能体框架。它不同于并行运行多个智能体（成本高昂！）的方式，Squad 使用**智能路由 (intelligent routing)** 和**串行执行 (serial execution)** 来高效协调专业化的智能体。
 
 可以将其理解为**领导一个专注的工程团队**，每个成员都有特定的角色，任务会在合适的时间分配给合适的人。
+
+**✨ 多 IDE 支持:**
+- ✅ **Claude Code** - 完全支持
+- ✅ **Cursor IDE** - 完全支持
+- 🔄 **自动检测** - Squad 在运行时自动检测您使用的 IDE
 
 ```
 用户请求
@@ -89,11 +94,12 @@ cd squad
 ```
 
 安装程序将：
-1. 复制规则到 `~/.claude/rules/`
-2. 复制智能体定义到 `~/.claude/agents/`
-3. 复制命令到 `~/.claude/commands/`
-4. 在 `~/.squad/` 中创建路由器配置
-5. 可选地添加文件权限
+1. 同时安装到 **Claude Code** (`~/.claude/`) 和 **Cursor IDE** (`~/.cursor/`)
+2. 将规则、智能体和命令复制到两个 IDE 目录
+3. 在 `~/.squad/` 中创建共享的路由器配置
+4. 可选地为两个 IDE 添加文件权限
+
+**注意：** Squad 在运行时自动检测您使用的 IDE - 无需配置！
 
 ### 首次设置
 

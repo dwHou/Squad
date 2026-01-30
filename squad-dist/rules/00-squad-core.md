@@ -1,7 +1,7 @@
 # Squad Core Rules
 
-**Version:** 0.1.0 (MVP)
-**Purpose:** Token-efficient multi-agent orchestration for Claude Code
+**Version:** 0.2.0 (Multi-IDE Support)
+**Purpose:** Token-efficient multi-agent orchestration for Claude Code and Cursor IDE
 
 ---
 
@@ -10,6 +10,12 @@
 Squad is a lightweight multi-agent framework that coordinates specialized AI agents through intelligent task routing. Unlike parallel execution systems, Squad prioritizes **token efficiency** through **serial execution** and **smart routing**.
 
 **Core Principle:** Right agent, right task, minimal overhead.
+
+**Supported IDEs:**
+- ✅ Claude Code
+- ✅ Cursor IDE
+
+Squad automatically detects the IDE environment at runtime - no configuration needed!
 
 ---
 
@@ -644,8 +650,45 @@ Task(skill="translate", args="...")
 
 ---
 
+## Runtime Environment Detection
+
+**🚨 CRITICAL: Squad automatically detects the IDE environment at runtime.**
+
+When processing `/squad` commands, Squad detects which IDE it's running in:
+
+**Detection Logic:**
+1. Check if `~/.cursor/rules/00-squad-core.md` exists → **Cursor IDE**
+2. Check if `~/.claude/rules/00-squad-core.md` exists → **Claude Code**
+3. Default to **Claude Code** if neither is found
+
+**Implementation:**
+```python
+def detect_ide_environment():
+    if file_exists("~/.cursor/rules/00-squad-core.md"):
+        return "cursor", "~/.cursor"
+    elif file_exists("~/.claude/rules/00-squad-core.md"):
+        return "claude", "~/.claude"
+    else:
+        return "claude", "~/.claude"  # Default
+
+env_type, ide_dir = detect_ide_environment()
+```
+
+**All file operations should use `ide_dir` instead of hardcoded paths.**
+
+---
+
 ## Configuration Files
 
+**Installation:**
+Squad installs to both IDE directories simultaneously:
+- `~/.claude/` - For Claude Code
+- `~/.cursor/` - For Cursor IDE
+
+**Runtime Detection:**
+Squad automatically uses the correct directory based on which IDE is active.
+
+**Claude Code:**
 ```
 ~/.claude/rules/00-squad-core.md    # This file (auto-loaded)
 ~/.claude/agents/                    # Agent definitions
@@ -654,6 +697,21 @@ Task(skill="translate", args="...")
     ├── config.md                    # /squad config command
     └── reflect.md                   # /squad reflect command
 ~/.claude/skills/                    # Skill definitions
+```
+
+**Cursor IDE:**
+```
+~/.cursor/rules/00-squad-core.md     # This file (auto-loaded)
+~/.cursor/agents/                    # Agent definitions
+~/.cursor/commands/
+    ├── squad.md                     # /squad command
+    ├── config.md                    # /squad config command
+    └── reflect.md                   # /squad reflect command
+~/.cursor/skills/                    # Skill definitions
+```
+
+**Shared Configuration (both IDEs):**
+```
 ~/.squad/
     ├── config.yaml                  # User config (language, permissions)
     ├── router.yaml                  # Routing rules (extensible)

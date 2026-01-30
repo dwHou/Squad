@@ -13,6 +13,7 @@ NC='\033[0m'
 PROJECT_ROOT=$(pwd)
 SOURCE_DIR="$PROJECT_ROOT/squad-dist"
 CLAUDE_DIR="$HOME/.claude"
+CURSOR_DIR="$HOME/.cursor"
 SQUAD_DIR="$HOME/.squad"
 
 # ============================================================
@@ -82,6 +83,11 @@ SQUAD_FILES=(
     "$CLAUDE_DIR/agents/engineer.md"
     "$CLAUDE_DIR/agents/tester.md"
     "$CLAUDE_DIR/commands/squad.md"
+    "$CURSOR_DIR/rules/00-squad-core.md"
+    "$CURSOR_DIR/agents/researcher.md"
+    "$CURSOR_DIR/agents/engineer.md"
+    "$CURSOR_DIR/agents/tester.md"
+    "$CURSOR_DIR/commands/squad.md"
     "$SQUAD_DIR/router.yaml"
     "$SQUAD_DIR/config.yaml"
 )
@@ -140,12 +146,12 @@ fi
 # Main Installation
 # ============================================================
 echo -e "${BLUE}Squad Installer${NC}"
-echo -e "${DIM}Token-efficient multi-agent orchestration for Claude Code${NC}"
+echo -e "${DIM}Token-efficient multi-agent orchestration for Claude Code & Cursor IDE${NC}"
 echo ""
 
 # Handle Clean Mode
 if [ "$CLEAN_MODE" = true ]; then
-    if [ -f "$CLAUDE_DIR/rules/00-squad-core.md" ]; then
+    if [ -f "$CLAUDE_DIR/rules/00-squad-core.md" ] || [ -f "$CURSOR_DIR/rules/00-squad-core.md" ]; then
         clean_squad
         echo ""
     else
@@ -166,15 +172,22 @@ fi
 # ============================================================
 echo -e "${BLUE}[1/4] Creating directories${NC}"
 
+# Claude Code directories
 mkdir -p "$CLAUDE_DIR/rules"
 mkdir -p "$CLAUDE_DIR/agents"
 mkdir -p "$CLAUDE_DIR/commands"
+
+# Cursor IDE directories
+mkdir -p "$CURSOR_DIR/rules"
+mkdir -p "$CURSOR_DIR/agents"
+mkdir -p "$CURSOR_DIR/commands"
+
+# Shared configuration directory
 mkdir -p "$SQUAD_DIR"
 
-echo -e "  ${GREEN}[ok]${NC} ~/.claude/rules/"
-echo -e "  ${GREEN}[ok]${NC} ~/.claude/agents/"
-echo -e "  ${GREEN}[ok]${NC} ~/.claude/commands/"
-echo -e "  ${GREEN}[ok]${NC} ~/.squad/"
+echo -e "  ${GREEN}[ok]${NC} ~/.claude/ (Claude Code)"
+echo -e "  ${GREEN}[ok]${NC} ~/.cursor/ (Cursor IDE)"
+echo -e "  ${GREEN}[ok]${NC} ~/.squad/ (Shared config)"
 echo ""
 
 # ============================================================
@@ -182,20 +195,23 @@ echo ""
 # ============================================================
 echo -e "${BLUE}[2/4] Installing core files${NC}"
 
-# Rules
+# Rules - install to both IDEs
 cp "$SOURCE_DIR/rules/00-squad-core.md" "$CLAUDE_DIR/rules/"
-echo -e "  ${GREEN}[ok]${NC} Core rules → ~/.claude/rules/"
+cp "$SOURCE_DIR/rules/00-squad-core.md" "$CURSOR_DIR/rules/"
+echo -e "  ${GREEN}[ok]${NC} Core rules → ~/.claude/rules/ & ~/.cursor/rules/"
 
-# Agents
+# Agents - install to both IDEs
 cp "$SOURCE_DIR"/agents/*.md "$CLAUDE_DIR/agents/"
+cp "$SOURCE_DIR"/agents/*.md "$CURSOR_DIR/agents/"
 AGENT_COUNT=$(find "$SOURCE_DIR/agents" -maxdepth 1 -name "*.md" | wc -l | tr -d ' ')
-echo -e "  ${GREEN}[ok]${NC} Agents ($AGENT_COUNT files) → ~/.claude/agents/"
+echo -e "  ${GREEN}[ok]${NC} Agents ($AGENT_COUNT files) → ~/.claude/agents/ & ~/.cursor/agents/"
 
-# Commands
+# Commands - install to both IDEs
 cp "$SOURCE_DIR"/commands/*.md "$CLAUDE_DIR/commands/"
-echo -e "  ${GREEN}[ok]${NC} Commands → ~/.claude/commands/"
+cp "$SOURCE_DIR"/commands/*.md "$CURSOR_DIR/commands/"
+echo -e "  ${GREEN}[ok]${NC} Commands → ~/.claude/commands/ & ~/.cursor/commands/"
 
-# Router
+# Router - shared configuration
 cp "$SOURCE_DIR/router/router.yaml" "$SQUAD_DIR/"
 echo -e "  ${GREEN}[ok]${NC} Router config → ~/.squad/"
 
@@ -236,9 +252,12 @@ echo ""
 echo -e "${BLUE}[4/4] Permissions${NC}"
 echo ""
 echo "Squad agents need read access to installed files."
-echo "Add these permissions to ~/.claude/settings.json?"
+echo "Add permissions to both Claude Code and Cursor IDE settings?"
 echo ""
+echo -e "  ${DIM}Claude Code: ~/.claude/settings.json${NC}"
+echo -e "  ${DIM}Cursor IDE: ~/.cursor/settings.json${NC}"
 echo -e "  ${DIM}Read(path:$CLAUDE_DIR/**)${NC}"
+echo -e "  ${DIM}Read(path:$CURSOR_DIR/**)${NC}"
 echo -e "  ${DIM}Read(path:$SQUAD_DIR/**)${NC}"
 echo ""
 
@@ -250,50 +269,75 @@ else
 fi
 
 if [[ ! $ADD_PERMS =~ ^[Nn]$ ]]; then
-    mkdir -p "$CLAUDE_DIR"
-
     if command -v python3 &>/dev/null; then
-        CLAUDE_DIR_ENV="$CLAUDE_DIR" SQUAD_DIR_ENV="$SQUAD_DIR" python3 << 'PYTHON_SCRIPT'
+        CLAUDE_DIR_ENV="$CLAUDE_DIR" CURSOR_DIR_ENV="$CURSOR_DIR" SQUAD_DIR_ENV="$SQUAD_DIR" python3 << 'PYTHON_SCRIPT'
 import json
 import os
 
-settings_path = os.path.expanduser("~/.claude/settings.json")
 claude_dir = os.environ.get("CLAUDE_DIR_ENV", "")
+cursor_dir = os.environ.get("CURSOR_DIR_ENV", "")
 squad_dir = os.environ.get("SQUAD_DIR_ENV", "")
 
 allow_entries = [
     f"Read(path:{claude_dir}/**)",
+    f"Read(path:{cursor_dir}/**)",
     f"Read(path:{squad_dir}/**)",
 ]
 
-if os.path.exists(settings_path):
-    with open(settings_path, "r", encoding="utf-8") as f:
-        settings = json.load(f)
+# Update Claude Code settings
+claude_settings_path = os.path.expanduser("~/.claude/settings.json")
+if os.path.exists(claude_settings_path):
+    with open(claude_settings_path, "r", encoding="utf-8") as f:
+        claude_settings = json.load(f)
 else:
-    settings = {}
+    claude_settings = {}
 
-permissions = settings.setdefault("permissions", {})
-allow = permissions.setdefault("allow", [])
+claude_permissions = claude_settings.setdefault("permissions", {})
+claude_allow = claude_permissions.setdefault("allow", [])
 
 for entry in allow_entries:
-    if entry and entry not in allow:
-        allow.append(entry)
+    if entry and entry not in claude_allow:
+        claude_allow.append(entry)
 
-if "defaultMode" not in permissions:
-    permissions["defaultMode"] = "default"
+if "defaultMode" not in claude_permissions:
+    claude_permissions["defaultMode"] = "default"
 
-with open(settings_path, "w", encoding="utf-8") as f:
-    json.dump(settings, f, indent=2, ensure_ascii=False)
+os.makedirs(os.path.dirname(claude_settings_path), exist_ok=True)
+with open(claude_settings_path, "w", encoding="utf-8") as f:
+    json.dump(claude_settings, f, indent=2, ensure_ascii=False)
+
+# Update Cursor IDE settings
+cursor_settings_path = os.path.expanduser("~/.cursor/settings.json")
+if os.path.exists(cursor_settings_path):
+    with open(cursor_settings_path, "r", encoding="utf-8") as f:
+        cursor_settings = json.load(f)
+else:
+    cursor_settings = {}
+
+cursor_permissions = cursor_settings.setdefault("permissions", {})
+cursor_allow = cursor_permissions.setdefault("allow", [])
+
+for entry in allow_entries:
+    if entry and entry not in cursor_allow:
+        cursor_allow.append(entry)
+
+if "defaultMode" not in cursor_permissions:
+    cursor_permissions["defaultMode"] = "default"
+
+os.makedirs(os.path.dirname(cursor_settings_path), exist_ok=True)
+with open(cursor_settings_path, "w", encoding="utf-8") as f:
+    json.dump(cursor_settings, f, indent=2, ensure_ascii=False)
 
 print("ok")
 PYTHON_SCRIPT
         echo -e "  ${GREEN}[ok]${NC} Updated ~/.claude/settings.json"
+        echo -e "  ${GREEN}[ok]${NC} Updated ~/.cursor/settings.json"
     else
         echo -e "  ${YELLOW}[skip]${NC} Python3 not found, cannot update settings.json"
         echo ""
-        echo "Please manually add these to ~/.claude/settings.json permissions.allow:"
-        echo -e "  ${DIM}Read(path:$CLAUDE_DIR/**)${NC}"
-        echo -e "  ${DIM}Read(path:$SQUAD_DIR/**)${NC}"
+        echo "Please manually add these permissions:"
+        echo -e "  ${DIM}~/.claude/settings.json: Read(path:$CLAUDE_DIR/**), Read(path:$SQUAD_DIR/**)${NC}"
+        echo -e "  ${DIM}~/.cursor/settings.json: Read(path:$CURSOR_DIR/**), Read(path:$SQUAD_DIR/**)${NC}"
     fi
 else
     echo -e "  ${DIM}Skipped permission update${NC}"
@@ -306,12 +350,13 @@ echo ""
 echo -e "${GREEN}Installation complete!${NC}"
 echo ""
 echo "Installed to:"
-echo -e "  ${DIM}$CLAUDE_DIR/rules/${NC}       Core rules (auto-loaded)"
-echo -e "  ${DIM}$CLAUDE_DIR/agents/${NC}      Agent definitions"
-echo -e "  ${DIM}$CLAUDE_DIR/commands/${NC}    Commands"
-echo -e "  ${DIM}$SQUAD_DIR/${NC}              Configuration"
+echo -e "  ${DIM}$CLAUDE_DIR/${NC}              Claude Code (rules, agents, commands)"
+echo -e "  ${DIM}$CURSOR_DIR/${NC}             Cursor IDE (rules, agents, commands)"
+echo -e "  ${DIM}$SQUAD_DIR/${NC}              Shared configuration"
 echo ""
-echo -e "Start Claude Code and try: ${GREEN}/squad --help${NC}"
+echo -e "Squad will automatically detect your IDE environment when you run ${GREEN}/squad${NC}"
+echo ""
+echo -e "Try it in Claude Code or Cursor IDE: ${GREEN}/squad --help${NC}"
 echo ""
 echo -e "${DIM}Documentation: README.md${NC}"
 echo -e "${DIM}Configuration: ~/.squad/config.yaml${NC}"

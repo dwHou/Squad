@@ -11,9 +11,14 @@
 
 ## What is Squad?
 
-**Squad** is a lightweight multi-agent framework designed for Claude Code. Instead of running multiple agents in parallel (expensive!), Squad uses **intelligent routing** and **serial execution** to coordinate specialized agents efficiently.
+**Squad** is a lightweight multi-agent framework designed for **Claude Code** and **Cursor IDE**. Instead of running multiple agents in parallel (expensive!), Squad uses **intelligent routing** and **serial execution** to coordinate specialized agents efficiently.
 
 Think of it as **leading a focused engineering team** where each member has a specific role, and tasks are assigned to the right person at the right time.
+
+**✨ Multi-IDE Support:**
+- ✅ **Claude Code** - Full support
+- ✅ **Cursor IDE** - Full support
+- 🔄 **Auto-detection** - Squad automatically detects your IDE at runtime
 
 ```
 User Request
@@ -89,11 +94,12 @@ cd squad
 ```
 
 The installer will:
-1. Copy rules to `~/.claude/rules/`
-2. Copy agent definitions to `~/.claude/agents/`
-3. Copy commands to `~/.claude/commands/`
-4. Create router config in `~/.squad/`
-5. Optionally add file permissions
+1. Install to **both** Claude Code (`~/.claude/`) and Cursor IDE (`~/.cursor/`)
+2. Copy rules, agents, and commands to both IDE directories
+3. Create shared router config in `~/.squad/`
+4. Optionally add file permissions for both IDEs
+
+**Note:** Squad automatically detects which IDE you're using at runtime - no configuration needed!
 
 ### First-Time Setup
 
@@ -594,6 +600,9 @@ squad/
 
 **After installation:**
 
+Squad installs to **both** IDE directories:
+
+**Claude Code:**
 ```
 ~/.claude/
 ├── rules/00-squad-core.md      # Auto-loaded by Claude Code
@@ -608,7 +617,27 @@ squad/
 │   └── exit.md
 └── skills/                      # Squad skills
     └── translate.md
+```
 
+**Cursor IDE:**
+```
+~/.cursor/
+├── rules/00-squad-core.md       # Auto-loaded by Cursor
+├── agents/                      # Available to Task tool
+│   ├── researcher.md
+│   ├── engineer.md
+│   └── tester.md
+├── commands/                    # Squad commands
+│   ├── squad.md
+│   ├── config.md
+│   ├── reflect.md
+│   └── exit.md
+└── skills/                      # Squad skills
+    └── translate.md
+```
+
+**Shared Configuration (both IDEs):**
+```
 ~/.squad/
 ├── config.yaml                  # User configuration
 ├── router.yaml                  # Routing rules
@@ -617,6 +646,9 @@ squad/
 ├── backups/                     # Backup files
 └── logs/                        # Action logs (autonomous mode)
 ```
+
+**Runtime Detection:**
+When you run `/squad`, it automatically detects whether you're in Claude Code or Cursor IDE and uses the correct directory.
 
 ---
 

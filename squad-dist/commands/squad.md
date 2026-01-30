@@ -1,8 +1,49 @@
 # Squad Command
 
 **Command:** `/squad`
-**Version:** 0.3.0
+**Version:** 0.4.0 (Multi-IDE Support)
 **Purpose:** Token-efficient multi-agent task orchestration with unified visualization
+
+---
+
+## Environment Detection (Runtime)
+
+**🚨 CRITICAL: Before processing any command, detect the current IDE environment.**
+
+Squad automatically detects whether it's running in Claude Code or Cursor IDE at runtime.
+
+**Detection Logic:**
+1. Check if `~/.cursor/rules/00-squad-core.md` exists → **Cursor IDE**
+2. Check if `~/.claude/rules/00-squad-core.md` exists → **Claude Code**
+3. Default to **Claude Code** if neither is found
+
+**Pseudo-code:**
+```python
+def detect_ide_environment():
+    """
+    Detect which IDE environment Squad is running in.
+    Returns: ("claude" | "cursor", "~/.claude" | "~/.cursor")
+    """
+    cursor_rules = "~/.cursor/rules/00-squad-core.md"
+    claude_rules = "~/.claude/rules/00-squad-core.md"
+    
+    if file_exists(cursor_rules):
+        return "cursor", "~/.cursor"
+    elif file_exists(claude_rules):
+        return "claude", "~/.claude"
+    else:
+        # Default to Claude Code if neither found
+        return "claude", "~/.claude"
+
+# Use this at the start of every command
+env_type, ide_dir = detect_ide_environment()
+```
+
+**All file paths in this command should use `ide_dir` instead of hardcoded `~/.claude/`.**
+
+**Examples:**
+- If running in Cursor: `ide_dir = "~/.cursor"`, use `~/.cursor/agents/`, `~/.cursor/commands/`
+- If running in Claude Code: `ide_dir = "~/.claude"`, use `~/.claude/agents/`, `~/.claude/commands/`
 
 ---
 
@@ -392,6 +433,11 @@ Use the Task tool to call the selected agent. This ensures:
 - ✅ Consistent agent experience
 
 ```python
+# Step 5.0: Detect IDE environment (MUST BE FIRST)
+env_type, ide_dir = detect_ide_environment()
+# env_type = "claude" or "cursor"
+# ide_dir = "~/.claude" or "~/.cursor"
+
 # Step 5.1: Check language preference
 config = read_yaml("~/.squad/config.yaml")
 user_language = config.get("language", "en")
@@ -638,6 +684,8 @@ verbose: false
 
 ### `~/.squad/router.yaml`
 See router.yaml for keyword routing rules.
+
+**Note:** All configuration files in `~/.squad/` are shared between Claude Code and Cursor IDE. The environment detection happens at runtime based on which IDE directory contains the Squad rules.
 
 ---
 
