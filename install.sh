@@ -83,11 +83,13 @@ SQUAD_FILES=(
     "$CLAUDE_DIR/agents/engineer.md"
     "$CLAUDE_DIR/agents/tester.md"
     "$CLAUDE_DIR/commands/squad.md"
+    "$CLAUDE_DIR/protocols/visualization.md"
     "$CURSOR_DIR/rules/00-squad-core.md"
     "$CURSOR_DIR/agents/researcher.md"
     "$CURSOR_DIR/agents/engineer.md"
     "$CURSOR_DIR/agents/tester.md"
     "$CURSOR_DIR/commands/squad.md"
+    "$CURSOR_DIR/protocols/visualization.md"
     "$SQUAD_DIR/router.yaml"
     "$SQUAD_DIR/config.yaml"
 )
@@ -176,11 +178,13 @@ echo -e "${BLUE}[1/4] Creating directories${NC}"
 mkdir -p "$CLAUDE_DIR/rules"
 mkdir -p "$CLAUDE_DIR/agents"
 mkdir -p "$CLAUDE_DIR/commands"
+mkdir -p "$CLAUDE_DIR/protocols"
 
 # Cursor IDE directories
 mkdir -p "$CURSOR_DIR/rules"
 mkdir -p "$CURSOR_DIR/agents"
 mkdir -p "$CURSOR_DIR/commands"
+mkdir -p "$CURSOR_DIR/protocols"
 
 # Shared configuration directory
 mkdir -p "$SQUAD_DIR"
@@ -210,6 +214,18 @@ echo -e "  ${GREEN}[ok]${NC} Agents ($AGENT_COUNT files) → ~/.claude/agents/ &
 cp "$SOURCE_DIR"/commands/*.md "$CLAUDE_DIR/commands/"
 cp "$SOURCE_DIR"/commands/*.md "$CURSOR_DIR/commands/"
 echo -e "  ${GREEN}[ok]${NC} Commands → ~/.claude/commands/ & ~/.cursor/commands/"
+
+# Protocols - install to both IDEs (reference documentation, rules already in core file)
+if [ -d "$SOURCE_DIR/protocols" ]; then
+    mkdir -p "$CLAUDE_DIR/protocols"
+    mkdir -p "$CURSOR_DIR/protocols"
+    cp "$SOURCE_DIR"/protocols/*.md "$CLAUDE_DIR/protocols/" 2>/dev/null || true
+    cp "$SOURCE_DIR"/protocols/*.md "$CURSOR_DIR/protocols/" 2>/dev/null || true
+    PROTOCOL_COUNT=$(find "$SOURCE_DIR/protocols" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$PROTOCOL_COUNT" -gt 0 ]; then
+        echo -e "  ${GREEN}[ok]${NC} Protocols ($PROTOCOL_COUNT files) → ~/.claude/protocols/ & ~/.cursor/protocols/ (reference)"
+    fi
+fi
 
 # Router - shared configuration
 cp "$SOURCE_DIR/router/router.yaml" "$SQUAD_DIR/"

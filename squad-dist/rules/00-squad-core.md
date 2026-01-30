@@ -21,6 +21,9 @@ Squad automatically detects the IDE environment at runtime - no configuration ne
 
 ## ⚠️ CRITICAL SQUAD EXECUTION RULES
 
+> **协议违规 = 执行失败**  
+> **These rules are MANDATORY and NON-NEGOTIABLE**
+
 **When handling `/squad` commands, you MUST:**
 
 1. **🚨 ALWAYS show routing decision FIRST** before executing:
@@ -35,11 +38,23 @@ Squad automatically detects the IDE environment at runtime - no configuration ne
 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
+   
+   **Required components:**
+   - ✅ Squad brand header ("▸ SQUAD | 路由决策")
+   - ✅ Agent emoji + name + tag
+   - ✅ 原因 (Reason): Why this agent was selected (1 sentence, specific)
+   - ✅ 预期 (Expected): Expected outcome (concrete, verifiable)
 
 2. **🚨 ALWAYS use Task tool** to invoke the agent - NEVER handle the task directly yourself:
    ```python
    Task(subagent_type="engineer", prompt="[TAG: frontend]\n\n{task}", ...)
    ```
+   
+   **❌ FORBIDDEN:**
+   - DO NOT read files directly
+   - DO NOT write code directly
+   - DO NOT skip the agent invocation
+   - DO NOT handle the task yourself
 
 3. **🚨 NEVER skip the agent** - Even if the task seems simple, route it through Squad
 
@@ -80,6 +95,8 @@ You: I'll help fix the login button. Let me read the file...
 ---
 
 ## 🎨 Visualization System Rules
+
+> **Note:** Detailed visualization protocol examples and reference documentation are available in `protocols/visualization.md` (installed for reference). The core rules below are MANDATORY and must be followed.
 
 Squad uses a unified visual system inspired by wukong's clarity but optimized for token efficiency.
 
@@ -690,25 +707,31 @@ Squad automatically uses the correct directory based on which IDE is active.
 
 **Claude Code:**
 ```
-~/.claude/rules/00-squad-core.md    # This file (auto-loaded)
+~/.claude/rules/00-squad-core.md    # This file (auto-loaded, contains all mandatory rules)
 ~/.claude/agents/                    # Agent definitions
 ~/.claude/commands/
     ├── squad.md                     # /squad command
     ├── config.md                    # /squad config command
     └── reflect.md                   # /squad reflect command
+~/.claude/protocols/                 # Protocol reference documentation (optional)
+    └── visualization.md             # Detailed visualization examples (reference only)
 ~/.claude/skills/                    # Skill definitions
 ```
 
 **Cursor IDE:**
 ```
-~/.cursor/rules/00-squad-core.md     # This file (auto-loaded)
+~/.cursor/rules/00-squad-core.md     # This file (auto-loaded, contains all mandatory rules)
 ~/.cursor/agents/                    # Agent definitions
 ~/.cursor/commands/
     ├── squad.md                     # /squad command
     ├── config.md                    # /squad config command
     └── reflect.md                   # /squad reflect command
+~/.cursor/protocols/                 # Protocol reference documentation (optional)
+    └── visualization.md             # Detailed visualization examples (reference only)
 ~/.cursor/skills/                    # Skill definitions
 ```
+
+**Important:** The core rules in `00-squad-core.md` are MANDATORY and auto-loaded by both IDEs. The `protocols/` directory contains detailed examples and reference documentation but is NOT required for execution - all mandatory rules are already in the core file.
 
 **Shared Configuration (both IDEs):**
 ```
