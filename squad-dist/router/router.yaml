@@ -1,10 +1,137 @@
 # Squad Router Configuration
-# Version: 0.1.0 (MVP)
+# Version: 0.4.0 (Independent Designer Agent)
 # Purpose: Keyword-based task routing rules
 
 # ============================================================
 # Router Rules
 # ============================================================
+
+designer:
+  ui:
+    keywords:
+      # Design evaluation
+      - design review
+      - design evaluation
+      - design assessment
+      - design audit
+      - ui review
+      - ui evaluation
+      - visual review
+      - visual design
+      - aesthetic
+      - aesthetics
+      # Visual/UX
+      - color scheme
+      - color palette
+      - color consistency
+      - typography
+      - font size
+      - font weight
+      - line height
+      - spacing
+      - padding
+      - margin
+      - spacing consistency
+      - visual hierarchy
+      - layout consistency
+      - component consistency
+      # Design systems
+      - design system
+      - design tokens
+      - style guide
+      - brand consistency
+      - brand guidelines
+      # Chinese
+      - 设计评审
+      - 设计审查
+      - 设计评估
+      - 用户界面评审
+      - 视觉设计
+      - 美学
+      - 配色
+      - 色彩方案
+      - 排版
+      - 间距
+      - 设计系统
+      - 品牌一致性
+    default: true
+
+  ux:
+    keywords:
+      # UX evaluation
+      - ux review
+      - ux evaluation
+      - ux assessment
+      - user experience review
+      - user experience
+      - usability
+      - usability issue
+      - usability test
+      # User flows
+      - user flow
+      - user journey
+      - user path
+      - navigation flow
+      # Interactions
+      - interaction
+      - interaction pattern
+      - interaction design
+      - feedback
+      - user feedback
+      - error handling
+      - loading state
+      # Chinese
+      - 用户体验评审
+      - 用户体验
+      - 可用性
+      - 用户流程
+      - 用户旅程
+      - 交互设计
+      - 交互模式
+
+  accessibility:
+    keywords:
+      # Accessibility general
+      - accessibility
+      - accessible
+      - accessibility audit
+      - accessibility review
+      - a11y
+      - wcag
+      - wcag aa
+      - wcag aaa
+      # ARIA
+      - aria
+      - aria-label
+      - aria-describedby
+      - aria-live
+      - role attribute
+      # Contrast and visibility
+      - contrast
+      - contrast ratio
+      - color contrast
+      - text contrast
+      # Screen readers
+      - screen reader
+      - screen reader compatibility
+      - voiceover
+      - nvda
+      - jaws
+      # Keyboard
+      - keyboard navigation
+      - keyboard accessible
+      - focus indicator
+      - tab order
+      # Semantic HTML
+      - semantic html
+      - semantic markup
+      # Chinese
+      - 无障碍
+      - 可访问性
+      - 无障碍审查
+      - 对比度
+      - 屏幕阅读器
+      - 键盘导航
 
 researcher:
   codebase:

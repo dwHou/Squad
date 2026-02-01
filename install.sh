@@ -84,12 +84,14 @@ SQUAD_FILES=(
     "$CLAUDE_DIR/agents/tester.md"
     "$CLAUDE_DIR/commands/squad.md"
     "$CLAUDE_DIR/protocols/visualization.md"
+    "$CLAUDE_DIR/skills"
     "$CURSOR_DIR/rules/00-squad-core.md"
     "$CURSOR_DIR/agents/researcher.md"
     "$CURSOR_DIR/agents/engineer.md"
     "$CURSOR_DIR/agents/tester.md"
     "$CURSOR_DIR/commands/squad.md"
     "$CURSOR_DIR/protocols/visualization.md"
+    "$CURSOR_DIR/skills"
     "$SQUAD_DIR/router.yaml"
     "$SQUAD_DIR/config.yaml"
 )
@@ -102,6 +104,9 @@ clean_squad() {
         if [ -f "$file" ]; then
             rm -f "$file"
             echo -e "  ${GREEN}[removed]${NC} $file"
+        elif [ -d "$file" ]; then
+            rm -rf "$file"
+            echo -e "  ${GREEN}[removed]${NC} $file (directory)"
         fi
     done
 
@@ -179,12 +184,14 @@ mkdir -p "$CLAUDE_DIR/rules"
 mkdir -p "$CLAUDE_DIR/agents"
 mkdir -p "$CLAUDE_DIR/commands"
 mkdir -p "$CLAUDE_DIR/protocols"
+mkdir -p "$CLAUDE_DIR/skills"
 
 # Cursor IDE directories
 mkdir -p "$CURSOR_DIR/rules"
 mkdir -p "$CURSOR_DIR/agents"
 mkdir -p "$CURSOR_DIR/commands"
 mkdir -p "$CURSOR_DIR/protocols"
+mkdir -p "$CURSOR_DIR/skills"
 
 # Shared configuration directory
 mkdir -p "$SQUAD_DIR"
@@ -230,6 +237,14 @@ fi
 # Router - shared configuration
 cp "$SOURCE_DIR/router/router.yaml" "$SQUAD_DIR/"
 echo -e "  ${GREEN}[ok]${NC} Router config → ~/.squad/"
+
+# Skills - install to both IDEs
+if [ -d "$SOURCE_DIR/skills" ]; then
+    cp -r "$SOURCE_DIR/skills"/* "$CLAUDE_DIR/skills/"
+    cp -r "$SOURCE_DIR/skills"/* "$CURSOR_DIR/skills/"
+    SKILL_COUNT=$(find "$SOURCE_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+    echo -e "  ${GREEN}[ok]${NC} Skills ($SKILL_COUNT modules) → ~/.claude/skills/ & ~/.cursor/skills/"
+fi
 
 echo ""
 

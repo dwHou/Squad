@@ -1,6 +1,6 @@
 # Squad Core Rules
 
-**Version:** 0.2.0 (Multi-IDE Support)
+**Version:** 0.4.0 (Independent Designer Agent)
 **Purpose:** Token-efficient multi-agent orchestration for Claude Code and Cursor IDE
 
 ---
@@ -102,21 +102,22 @@ Squad uses a unified visual system inspired by wukong's clarity but optimized fo
 
 ### **1. Emoji System (STRICT)**
 
-**CRITICAL: Only use these THREE pre-approved emojis. NO EXCEPTIONS.**
+**CRITICAL: Only use these FOUR pre-approved emojis. NO EXCEPTIONS.**
 
 | Agent | Emoji | Usage |
 |-------|-------|-------|
+| 设计师 (Designer) | 🎨 | Design evaluation, UX review, accessibility audit |
 | 研究员 (Researcher) | 🔍 | Code exploration, file search, architecture analysis |
 | 工程师 (Engineer) | 💻 | Feature implementation, bug fixes, code writing |
 | 测试员 (Tester) | 🚦 | Test execution, verification, CI/CD status |
 
 **❌ FORBIDDEN:**
-- DO NOT use any other emojis (🎯, 🗄️, 🎨, ⬆️, etc.)
+- DO NOT use any other emojis (🎯, 🗄️, ⬆️, etc.)
 - DO NOT add emojis for emphasis or decoration
 - DO NOT use emojis for tags (frontend/backend/fullstack)
 
 **✅ ALLOWED:**
-- Only the three agent emojis above
+- Only the four agent emojis above
 - Status symbols: ✓/▶/○/✗ (see below)
 
 ### **2. Symbol System**
@@ -284,7 +285,29 @@ Result Aggregation
 
 ## Agents & Tags
 
-### 1. 🔍 Researcher / 研究员
+### 1. 🎨 Designer / 设计师
+**Purpose:** Design evaluation, UX assessment, accessibility audit
+
+**Emoji:** 🎨 (Palette - Design & Aesthetics)
+
+**Tags:**
+- `ui` (default) - Visual design and UI consistency
+- `ux` - User experience and interaction design
+- `accessibility` - Accessibility and WCAG compliance
+
+**Tools:** Read, Glob, Grep (read-only)
+**Model:** Haiku (cost-efficient)
+
+**Display format:**
+```
+🎨 @设计师:界面
+   原因: {selection reason}
+   预期: {expected outcome}
+```
+
+---
+
+### 2. 🔍 Researcher / 研究员
 **Purpose:** Explore codebase, search files, understand architecture
 
 **Emoji:** 🔍 (Magnifying Glass - Search & Exploration)
@@ -305,7 +328,7 @@ Result Aggregation
 
 ---
 
-### 2. 💻 Engineer / 工程师
+### 3. 💻 Engineer / 工程师
 **Purpose:** Implement features, fix bugs, write code
 
 **Emoji:** 💻 (Laptop - Coding & Implementation)
@@ -327,7 +350,7 @@ Result Aggregation
 
 ---
 
-### 3. 🚦 Tester / 测试员
+### 4. 🚦 Tester / 测试员
 **Purpose:** Run tests, verify results, check builds
 
 **Emoji:** 🚦 (Traffic Light - CI/CD Status, Pass/Fail)
@@ -362,6 +385,12 @@ When user explicitly specifies agent and tag, **always respect their choice**.
 ---
 
 ### Priority 2: Keyword Matching
+
+**Designer triggers:**
+- UI: `design review`, `ui review`, `visual design`, `color scheme`, `typography`, `spacing`, `design system`
+- UX: `ux review`, `user experience`, `user flow`, `interaction`, `usability`
+- Accessibility: `accessibility`, `wcag`, `a11y`, `contrast`, `screen reader`, `aria`
+- Keywords (中文): `设计评审`, `视觉设计`, `用户体验`, `无障碍`, `可访问性`
 
 **Researcher triggers:**
 - Keywords: `explore`, `find`, `search`, `understand`, `analyze`, `investigate`
@@ -489,6 +518,7 @@ Self-reflection and continuous improvement:
 ## Bilingual Support
 
 **Aliases:**
+- `designer` = `设计师`
 - `researcher` = `研究员`
 - `engineer` = `工程师`
 - `tester` = `测试员`
@@ -823,6 +853,7 @@ last_task_at: 2026-01-29T10:35:00Z
 
 ## Version History
 
+- **v0.4.0** - Added independent Designer agent (separate from Researcher)
 - **v0.3.0** - Added visualization system (emojis, symbols, colors, 2-part declarations)
 - **v0.2.0** - Added persistent mode, auto-routing, /exit command
 - **v0.1.0** (MVP) - Basic routing, 3 agents, tag system

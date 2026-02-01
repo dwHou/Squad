@@ -1,0 +1,369 @@
+# Squad Skills Registry
+# Version: 1.0.0
+# Purpose: Centralized registry of all available skills with metadata and routing info
+
+skills:
+  # ============================================================================
+  # Frontend Design & UI Skills
+  # ============================================================================
+
+  frontend-design:
+    name: frontend-design
+    category: frontend-design
+    description: Create distinctive, production-grade frontend interfaces with high design quality. Use for building web components, pages, dashboards, React components, or any web UI that needs exceptional aesthetics.
+    usefulness: 9
+    agents:
+      - engineer:frontend
+      - engineer:fullstack
+    triggers:
+      - "design interface"
+      - "create component"
+      - "build UI"
+      - "frontend design"
+      - "web page"
+      - "dashboard"
+    readonly: false
+    destructive: false
+
+  web-artifacts-builder:
+    name: web-artifacts-builder
+    category: frontend-design
+    description: Build complete web applications and interactive artifacts. Ideal for prototypes, demos, and self-contained web apps.
+    usefulness: 8
+    agents:
+      - engineer:frontend
+      - engineer:fullstack
+    triggers:
+      - "web app"
+      - "interactive prototype"
+      - "demo"
+      - "artifact"
+    readonly: false
+    destructive: false
+
+  canvas-design:
+    name: canvas-design
+    category: frontend-design
+    description: Create visual designs and layouts using canvas-based tools. Useful for mockups and visual design work.
+    usefulness: 7
+    agents:
+      - engineer:frontend
+    triggers:
+      - "canvas"
+      - "visual design"
+      - "mockup"
+    readonly: false
+    destructive: false
+
+  algorithmic-art:
+    name: algorithmic-art
+    category: frontend-design
+    description: Generate algorithmic art and creative visualizations. Use for data visualization, generative art, or creative coding projects.
+    usefulness: 6
+    agents:
+      - engineer:frontend
+    triggers:
+      - "algorithmic art"
+      - "generative art"
+      - "visualization"
+      - "creative coding"
+    readonly: false
+    destructive: false
+
+  slack-gif-creator:
+    name: slack-gif-creator
+    category: frontend-design
+    description: Create animated GIFs optimized for Slack and other messaging platforms.
+    usefulness: 5
+    agents:
+      - engineer:frontend
+    triggers:
+      - "gif"
+      - "animation"
+      - "slack"
+    readonly: false
+    destructive: false
+
+  theme-factory:
+    name: theme-factory
+    category: frontend-design
+    description: Generate cohesive design themes with color palettes, typography, and component styles. Perfect for establishing consistent design systems.
+    usefulness: 8
+    agents:
+      - engineer:frontend
+      - engineer:fullstack
+    triggers:
+      - "theme"
+      - "design system"
+      - "color palette"
+      - "branding"
+    readonly: false
+    destructive: false
+
+  brand-guidelines:
+    name: brand-guidelines
+    category: frontend-design
+    description: Create comprehensive brand guidelines including logo usage, color systems, typography, and design principles.
+    usefulness: 7
+    agents:
+      - engineer:frontend
+      - researcher:documentation
+    triggers:
+      - "brand"
+      - "guidelines"
+      - "style guide"
+      - "identity"
+    readonly: false
+    destructive: false
+
+  # ============================================================================
+  # Document Processing Skills
+  # ============================================================================
+
+  docx:
+    name: docx
+    category: document-processing
+    description: Read and write Microsoft Word (.docx) documents. Use for document generation, processing, and conversion tasks.
+    usefulness: 8
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+    triggers:
+      - "word document"
+      - "docx"
+      - ".docx"
+      - "document generation"
+    readonly: false
+    destructive: false
+
+  pdf:
+    name: pdf
+    category: document-processing
+    description: Read, generate, and manipulate PDF files. Supports text extraction, PDF creation, and document analysis.
+    usefulness: 9
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+    triggers:
+      - "pdf"
+      - ".pdf"
+      - "document analysis"
+      - "extract text"
+    readonly: false
+    destructive: false
+
+  pptx:
+    name: pptx
+    category: document-processing
+    description: Create and manipulate PowerPoint (.pptx) presentations. Ideal for slide generation and presentation automation.
+    usefulness: 7
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+    triggers:
+      - "powerpoint"
+      - "pptx"
+      - "slides"
+      - "presentation"
+    readonly: false
+    destructive: false
+
+  xlsx:
+    name: xlsx
+    category: document-processing
+    description: Read and write Excel (.xlsx) spreadsheets. Use for data processing, report generation, and spreadsheet automation.
+    usefulness: 8
+    agents:
+      - researcher:codebase
+      - engineer:backend
+      - engineer:fullstack
+    triggers:
+      - "excel"
+      - "xlsx"
+      - "spreadsheet"
+      - "data export"
+    readonly: false
+    destructive: false
+
+  doc-coauthoring:
+    name: doc-coauthoring
+    category: document-processing
+    description: Structured workflow for co-authoring documentation with context gathering, iterative refinement, and reader testing. Ideal for technical specs, proposals, and decision docs.
+    usefulness: 9
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+    triggers:
+      - "write documentation"
+      - "create spec"
+      - "draft proposal"
+      - "technical doc"
+      - "decision doc"
+      - "RFC"
+    readonly: false
+    destructive: false
+
+  # ============================================================================
+  # Development & Tooling Skills
+  # ============================================================================
+
+  mcp-builder:
+    name: mcp-builder
+    category: development-tools
+    description: Guide for creating high-quality MCP (Model Context Protocol) servers. Use when building MCP servers to integrate external APIs or services.
+    usefulness: 8
+    agents:
+      - engineer:backend
+      - engineer:fullstack
+    triggers:
+      - "mcp server"
+      - "model context protocol"
+      - "api integration"
+      - "external service"
+    readonly: false
+    destructive: false
+
+  skill-creator:
+    name: skill-creator
+    category: development-tools
+    description: Create new skills for Claude and Squad framework. Use when extending Squad capabilities with custom skills.
+    usefulness: 7
+    agents:
+      - engineer:fullstack
+      - researcher:codebase
+    triggers:
+      - "create skill"
+      - "new skill"
+      - "extend squad"
+      - "skill development"
+    readonly: false
+    destructive: false
+
+  # ============================================================================
+  # Testing Skills
+  # ============================================================================
+
+  webapp-testing:
+    name: webapp-testing
+    category: testing
+    description: Toolkit for testing local web applications using Playwright. Supports frontend verification, UI testing, browser screenshots, and log analysis.
+    usefulness: 9
+    agents:
+      - tester:e2e
+      - tester:integration
+      - engineer:fullstack
+    triggers:
+      - "test webapp"
+      - "playwright"
+      - "e2e test"
+      - "browser test"
+      - "ui test"
+    readonly: true
+    destructive: false
+
+  # ============================================================================
+  # Communication Skills
+  # ============================================================================
+
+  internal-comms:
+    name: internal-comms
+    category: communications
+    description: Draft internal communications including team announcements, status updates, and project communications.
+    usefulness: 7
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+    triggers:
+      - "announcement"
+      - "team communication"
+      - "status update"
+      - "internal memo"
+    readonly: false
+    destructive: false
+
+  # ============================================================================
+  # Translation Skill (Special - Squad Core)
+  # ============================================================================
+
+  translate:
+    name: translate
+    category: translation
+    description: Intelligent translation for code, documentation, and natural language. Auto-injected when user language preference is non-English.
+    usefulness: 10
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+      - tester:unit
+    triggers:
+      - "translate"
+      - "翻译"
+      - "language"
+    readonly: false
+    destructive: false
+    special: true  # Core Squad skill, always available
+
+# ============================================================================
+# Category Definitions
+# ============================================================================
+
+categories:
+  frontend-design:
+    description: Skills for creating web interfaces, visual designs, and UI components
+    agents:
+      - engineer:frontend
+      - engineer:fullstack
+
+  document-processing:
+    description: Skills for reading, writing, and manipulating documents (PDF, Word, Excel, PowerPoint)
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+      - engineer:backend
+
+  development-tools:
+    description: Skills for building tools, MCP servers, and extending Squad capabilities
+    agents:
+      - engineer:backend
+      - engineer:fullstack
+      - researcher:codebase
+
+  testing:
+    description: Skills for automated testing and verification
+    agents:
+      - tester:e2e
+      - tester:integration
+      - tester:unit
+      - engineer:fullstack
+
+  communications:
+    description: Skills for drafting communications and documentation
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+
+  translation:
+    description: Language translation and localization skills
+    agents:
+      - researcher:documentation
+      - engineer:fullstack
+
+# ============================================================================
+# Skill Discovery Rules
+# ============================================================================
+
+discovery:
+  # How agents should discover and use skills
+
+  automatic:
+    # Skills that can be auto-invoked based on task keywords
+    enabled: true
+    confidence_threshold: 0.8
+
+  manual:
+    # Skills that require explicit invocation
+    require_explicit: []
+
+  suggestions:
+    # When to suggest skills to users
+    on_task_match: true
+    on_agent_selection: true

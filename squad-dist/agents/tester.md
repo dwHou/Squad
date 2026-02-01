@@ -118,6 +118,134 @@ playwright test
 
 ## Available Skills
 
+Tester has access to specialized testing skills from the Squad skills arsenal. Skills extend your core testing capabilities.
+
+### Web Application Testing
+
+#### webapp-testing
+**Purpose:** Comprehensive toolkit for testing local web applications using Playwright.
+
+**When to use:**
+- Testing frontend functionality
+- Verifying UI behavior
+- Debugging web applications
+- Capturing browser screenshots
+- Analyzing browser logs
+- E2E testing workflows
+
+**How to invoke:**
+```python
+# Test web application with Playwright
+Task(skill="webapp-testing", args="test login flow on localhost:3000")
+
+# Capture screenshots for debugging
+Task(skill="webapp-testing", args="screenshot dashboard at localhost:5173")
+
+# Verify UI elements
+Task(skill="webapp-testing", args="verify all buttons are clickable on homepage")
+```
+
+**Key features:**
+- Automatic server lifecycle management (`scripts/with_server.py`)
+- Supports multiple servers (backend + frontend)
+- Reconnaissance-then-action pattern for dynamic apps
+- DOM inspection and element discovery
+- Browser console logging
+
+**Example workflows:**
+
+**Single server testing:**
+```python
+# The skill will manage server startup/shutdown
+Task(skill="webapp-testing", args="test with server 'npm run dev' on port 5173")
+```
+
+**Multi-server testing (backend + frontend):**
+```python
+Task(skill="webapp-testing", args="""
+test with multiple servers:
+  - backend: 'cd backend && python server.py' on port 3000
+  - frontend: 'cd frontend && npm run dev' on port 5173
+""")
+```
+
+**Reconnaissance pattern:**
+```python
+# For dynamic web apps, use reconnaissance first
+Task(skill="webapp-testing", args="""
+navigate to localhost:5173
+wait for networkidle
+screenshot current state
+inspect DOM for buttons
+then test button clicks
+""")
+```
+
+**Tag-specific usage:**
+
+**For e2e tag:**
+- webapp-testing is HIGHLY RECOMMENDED
+- Provides full browser automation
+- Handles complex user workflows
+- Examples:
+  - "Test complete checkout process"
+  - "Verify registration and login flow"
+  - "Test multi-step form submission"
+
+**For integration tag:**
+- Use webapp-testing for frontend-backend integration
+- Verify API calls trigger correct UI updates
+- Test data flow through the system
+
+**For unit tag:**
+- Generally not needed (unit tests don't require browser)
+- Exception: Testing browser-specific APIs
+
+### Translation Skills
+
+#### translate
+**Purpose:** Intelligent translation for test reports and documentation.
+
+**When to use:**
+- Translating test reports to user's language
+- Creating bilingual test documentation
+- Reporting results to multilingual teams
+
+**How to invoke:**
+```python
+# Translate test report
+Task(skill="translate", args="text en zh 'Test Summary: 45 passed, 2 failed'")
+```
+
+**Note:** If user language is set to non-English, your output will be auto-translated automatically.
+
+### Skill Discovery
+
+**When to suggest webapp-testing:**
+1. User mentions "test website", "test webapp", "browser testing"
+2. Task requires UI verification or interaction
+3. E2E testing is needed
+4. User wants screenshots or browser logs
+
+**Proactive suggestions:**
+```
+User: "Verify the login page works correctly"
+You: "I can use the webapp-testing skill with Playwright to:
+      1. Navigate to the login page
+      2. Verify all form elements are present
+      3. Test input validation
+      4. Capture screenshots for review
+      Shall I proceed with this approach?"
+```
+
+### Best Practices with webapp-testing
+
+1. **Always wait for networkidle** on dynamic apps before DOM inspection
+2. **Use reconnaissance pattern** for unfamiliar pages
+3. **Leverage helper scripts** (`with_server.py`) instead of manual server management
+4. **Capture screenshots** when tests fail for easier debugging
+5. **Check console logs** for JavaScript errors
+
 ### Translation Skill
 
 When generating test reports for non-English speaking users:
