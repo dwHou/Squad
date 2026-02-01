@@ -889,7 +889,7 @@ ls ~/.claude/rules/00-squad-core.md</code></pre>
 
                 <p data-i18n="arch.desc">Squad 采用简洁的串行执行模型，通过智能路由将任务分配给最合适的智能体：</p>
 
-                <pre><code>用户请求
+                <pre><code id="arch-flow">用户请求
     ↓
 路由器（任务分析）
     ↓
@@ -915,7 +915,7 @@ ls ~/.claude/rules/00-squad-core.md</code></pre>
                 <h3 data-i18n="routing.how">工作原理</h3>
                 <p data-i18n="routing.desc">Squad 分析你的任务描述，通过关键词匹配自动路由到合适的智能体：</p>
 
-                <pre><code>任务: "修复登录按钮"
+                <pre><code id="routing-flow">任务: "修复登录按钮"
   ↓
 检测关键词: [按钮, 登录, 修复]
   ↓
@@ -955,7 +955,7 @@ ls ~/.claude/rules/00-squad-core.md</code></pre>
 
                 <h3 data-i18n="routing.visibility">路由可见性</h3>
                 <p data-i18n="routing.visibilitydesc">每个任务执行前都会显示路由决策：</p>
-                <pre><code>/squad 修复登录按钮
+                <pre><code id="routing-visibility-example">/squad 修复登录按钮
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ▸ SQUAD | 路由决策
@@ -1044,7 +1044,7 @@ ls ~/.claude/rules/00-squad-core.md</code></pre>
                 <p data-i18n="persistent.desc">持久模式让你一次激活 Squad，然后持续使用，无需每次都输入 <code>/squad</code>。这是推荐的使用方式。</p>
 
                 <h3 data-i18n="persistent.how">工作原理</h3>
-                <pre><code>/squad (无参数)
+                <pre><code id="persistent-flow">/squad (无参数)
     ↓
 进入持久模式
     ↓
@@ -1354,7 +1354,7 @@ ls ~/.claude/rules/00-squad-core.md</code></pre>
                 <p data-i18n="cmd.squad.desc">进入持久模式或执行单次任务</p>
 
                 <h4 data-i18n="cmd.squad.syntax">语法</h4>
-                <pre><code class="language-bash"><span class="comment"># 进入持久模式</span>
+                <pre><code id="cmd-squad-syntax" class="language-bash"><span class="comment"># 进入持久模式</span>
 /squad
 
 <span class="comment"># 单次执行</span>
@@ -2680,20 +2680,192 @@ language: en
 permission_level: balanced`
             },
             'usecase-explore-1': {
-                zh: `/squad 查找用户认证的实现位置`,
-                en: `/squad find where user authentication is implemented`
+                zh: `/squad 查找用户认证的实现位置
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 @研究员:代码库
+   原因: 需要定位和分析认证相关代码
+   预期: 返回认证模块文件列表和流程概览
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 研究员执行搜索...</span>
+
+✓ 任务完成 (12 秒)
+
+📋 认证实现位置:
+  - src/auth/login.ts:42 (主要逻辑)
+  - src/middleware/auth.ts:15 (中间件)
+  - src/api/auth.ts:23 (API 端点)
+
+架构概览:
+  登录流程: login.ts → 验证凭据 → 生成 JWT
+  中间件: 每个受保护路由验证 token
+  API: /api/auth/login, /api/auth/logout, /api/auth/refresh`,
+                en: `/squad find where user authentication is implemented
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | Routing Decision
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 @Researcher:codebase
+   Reason: Need to locate and analyze authentication code
+   Expected: Return authentication module file list and flow overview
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># Researcher performing search...</span>
+
+✓ Task complete (12s)
+
+📋 Authentication implementation locations:
+  - src/auth/login.ts:42 (main logic)
+  - src/middleware/auth.ts:15 (middleware)
+  - src/api/auth.ts:23 (API endpoints)
+
+Architecture overview:
+  Login flow: login.ts → validate credentials → generate JWT
+  Middleware: verify token on each protected route
+  API: /api/auth/login, /api/auth/logout, /api/auth/refresh`
             },
             'usecase-explore-2': {
                 zh: `/squad @researcher:codebase 分析支付模块的依赖关系`,
                 en: `/squad @researcher:codebase analyze payment module dependencies`
             },
             'usecase-implement': {
-                zh: `/squad @engineer:frontend 添加暗色模式切换按钮`,
-                en: `/squad @engineer:frontend add dark mode toggle button`
+                zh: `/squad @engineer:frontend 添加暗色模式切换按钮
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 组件实现，需要前端开发技能
+   预期: 可交互的主题切换按钮，支持本地存储
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 工程师开始实现...</span>
+
+▶ 实现中...
+  ├─ 创建 ThemeToggle.tsx 组件
+  ├─ 添加样式和动画效果
+  ├─ 集成到 Header 组件
+  └─ 添加 localStorage 持久化
+
+✓ 任务完成 (45 秒)
+
+文件变更:
+✓ src/components/ThemeToggle.tsx (新建)
+✓ src/components/Header.tsx (已修改)
+✓ src/styles/themes.css (已修改)
+
+功能说明:
+- 点击按钮切换亮色/暗色模式
+- 使用 localStorage 保存用户偏好
+- 平滑过渡动画 (0.3s ease)`,
+                en: `/squad @engineer:frontend add dark mode toggle button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | Routing Decision
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @Engineer:frontend
+   Reason: UI component implementation, requires frontend skills
+   Expected: Interactive theme toggle button with local storage support
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># Engineer starting implementation...</span>
+
+▶ In progress...
+  ├─ Create ThemeToggle.tsx component
+  ├─ Add styles and animations
+  ├─ Integrate into Header component
+  └─ Add localStorage persistence
+
+✓ Task complete (45s)
+
+File changes:
+✓ src/components/ThemeToggle.tsx (created)
+✓ src/components/Header.tsx (modified)
+✓ src/styles/themes.css (modified)
+
+Features:
+- Click button to toggle light/dark mode
+- Uses localStorage to save user preference
+- Smooth transition animation (0.3s ease)`
             },
             'usecase-testing': {
-                zh: `/squad 运行所有测试`,
-                en: `/squad run all tests`
+                zh: `/squad 运行所有测试
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚦 @测试员:单元
+   原因: 验证代码质量和测试覆盖率
+   预期: 所有测试通过 + 覆盖率报告
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 测试员执行测试套件...</span>
+
+▶ 执行中...
+  ├─ 运行单元测试
+  ├─ 运行集成测试
+  └─ 生成覆盖率报告
+
+✓ 任务完成 (23 秒)
+
+测试结果:
+  总计: 42 个测试
+  通过: 42 ✅
+  失败: 0
+
+覆盖率:
+  语句: 87.3%
+  分支: 82.1%
+  函数: 91.5%
+  行: 86.8%
+
+构建: ✅ 成功`,
+                en: `/squad run all tests
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | Routing Decision
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚦 @Tester:unit
+   Reason: Verify code quality and test coverage
+   Expected: All tests pass + coverage report
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># Tester executing test suite...</span>
+
+▶ In progress...
+  ├─ Run unit tests
+  ├─ Run integration tests
+  └─ Generate coverage report
+
+✓ Task complete (23s)
+
+Test results:
+  Total: 42 tests
+  Passed: 42 ✅
+  Failed: 0
+
+Coverage:
+  Statements: 87.3%
+  Branches: 82.1%
+  Functions: 91.5%
+  Lines: 86.8%
+
+Build: ✅ Success`
             },
             'usecase-workflow': {
                 zh: `<span class="comment"># 进入持久模式</span>
@@ -2730,6 +2902,118 @@ run frontend unit tests        → 🚦 Tester:unit
 
 <span class="comment"># 5. Done</span>
 /exit`
+            },
+            'arch-flow': {
+                zh: `用户请求
+    ↓
+路由器（任务分析）
+    ↓
+智能体选择（带标签）
+    ↓
+串行执行
+    ↓
+结果聚合`,
+                en: `User Request
+    ↓
+Router (Task Analysis)
+    ↓
+Agent Selection (with Tag)
+    ↓
+Serial Execution
+    ↓
+Result Aggregation`
+            },
+            'routing-flow': {
+                zh: `任务: "修复登录按钮"
+  ↓
+检测关键词: [按钮, 登录, 修复]
+  ↓
+匹配: frontend（按钮 → UI 工作）
+  ↓
+路由: 工程师:前端 💻
+  ↓
+使用前端专用指令执行`,
+                en: `Task: "fix login button"
+  ↓
+Detect Keywords: [button, login, fix]
+  ↓
+Match: frontend (button → UI work)
+  ↓
+Route: Engineer:frontend 💻
+  ↓
+Execute with frontend-specific instructions`
+            },
+            'routing-visibility-example': {
+                zh: `/squad 修复登录按钮
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 按钮实现
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                en: `/squad fix login button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | Routing Decision
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @Engineer:frontend
+   Reason: UI button implementation
+   Expected: Fix login button alignment issue
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+            },
+            'persistent-flow': {
+                zh: `/squad (无参数)
+    ↓
+进入持久模式
+    ↓
+所有用户输入 → 自动路由到 Squad
+    ↓
+/exit
+    ↓
+退出持久模式`,
+                en: `/squad (no parameters)
+    ↓
+Enter persistent mode
+    ↓
+All user input → Auto-route to Squad
+    ↓
+/exit
+    ↓
+Exit persistent mode`
+            },
+            'cmd-squad-syntax': {
+                zh: `<span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 单次执行</span>
+/squad [任务描述]
+
+<span class="comment"># 手动指定智能体和标签</span>
+/squad @[智能体]:[标签] [任务描述]
+
+<span class="comment"># 选项</span>
+/squad --verbose [任务]     <span class="comment"># 显示详细路由分析</span>
+/squad --help               <span class="comment"># 显示帮助信息</span>
+/squad --lang zh            <span class="comment"># 使用中文（当前命令）</span>`,
+                en: `<span class="comment"># Enter persistent mode</span>
+/squad
+
+<span class="comment"># Single execution</span>
+/squad [task description]
+
+<span class="comment"># Manually specify agent and tag</span>
+/squad @[agent]:[tag] [task description]
+
+<span class="comment"># Options</span>
+/squad --verbose [task]     <span class="comment"># Show detailed routing analysis</span>
+/squad --help               <span class="comment"># Show help</span>
+/squad --lang en            <span class="comment"># Use English (current command)</span>`
             }
         };
 

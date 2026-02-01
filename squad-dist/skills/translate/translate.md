@@ -14,6 +14,44 @@ The Translate skill provides intelligent translation capabilities for Squad agen
 
 ---
 
+## Quick Start
+
+### Common Tasks
+
+```bash
+# Find all Chinese comments in codebase
+/translate scan src/
+
+# Translate Chinese comments to English
+/translate comments "src/**/*.py" zh en
+
+# Translate README to Chinese
+/translate file README.md en zh
+
+# Scan specific file types
+/translate scan --type py src/
+```
+
+### Complete Translation Workflow
+
+```bash
+# 1. Pre-translation audit: Find all non-English text
+/translate scan src/
+→ Shows exact locations (file:line)
+
+# 2. Batch translate comments
+/translate comments-batch src/ zh en
+→ Translates all Chinese comments to English
+
+# 3. Verification: Ensure all translated
+/translate scan src/
+→ ✓ No non-ASCII characters found
+```
+
+**📖 Detailed Usage:** See [SCAN_USAGE.md](./SCAN_USAGE.md) for comprehensive scanner documentation.
+
+---
+
 ## Core Capabilities
 
 ### 1. Full Text Translation / 全文翻译
