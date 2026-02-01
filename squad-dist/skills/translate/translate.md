@@ -110,7 +110,74 @@ Smart-translated: "函数 `calculateTotal()` 定义在 src/utils.js:42"
 
 ---
 
-### 4. Paper Translation / 论文翻译
+### 4. Non-ASCII Character Scanner / 非英文字符扫描
+
+**Purpose:** Find all non-English characters (especially Chinese comments) in code files for comprehensive translation
+
+**Sub-commands:**
+- `/translate scan <path>` - Scan file or directory for non-ASCII characters
+- `/translate scan --type <ext> <path>` - Scan specific file types (py, js, cpp, etc.)
+- `/translate scan --comments <path>` - Focus on comments only (future enhancement)
+
+**Features:**
+- Detects all non-ASCII characters (Unicode ord > 127)
+- Recursively scans directories
+- Shows exact file location (file_path:line_number)
+- Supports multiple programming languages (.py, .js, .cpp, .h, .mm, .asm, .S, .sh, .txt, .md)
+- Skips common third-party directories (node_modules, vendors, third_party)
+- Auto-converts UTF-8 BOM to UTF-8 encoding
+
+**Technical Implementation:**
+Uses `squad-dist/skills/translate/scan_non_ascii.py` script which:
+- Walks directory tree recursively
+- Checks each line for characters with Unicode value > 127
+- Outputs format: `<file_path>:<line_num> <line_content>`
+- Handles encoding errors gracefully
+
+**Example:**
+```bash
+# Scan entire project for non-ASCII characters
+/translate scan src/
+
+Output:
+src/main.py:12 # 这是一个中文注释
+src/main.py:45 description = "这是描述文本"
+src/utils.py:23 # 工具函数
+src/utils.py:67 error_msg = "错误信息"
+
+找到 4 处非英文字符
+
+# Scan specific file types
+/translate scan --type py src/
+
+# Scan single file
+/translate scan src/main.py
+```
+
+**Use Cases:**
+1. **Pre-translation audit** - Find all non-English text before batch translation
+2. **Quality assurance** - Ensure no Chinese comments remain after translation
+3. **Localization check** - Identify hard-coded non-English strings
+4. **Code review** - Find mixed-language comments for standardization
+
+**Workflow Integration:**
+```bash
+# Step 1: Scan to find all Chinese comments
+/translate scan src/
+
+# Step 2: Review locations
+# Output shows exact file:line for each occurrence
+
+# Step 3: Batch translate
+/translate comments "src/**/*.py" zh en
+
+# Step 4: Verify (scan again to ensure all translated)
+/translate scan src/
+```
+
+---
+
+### 5. Paper Translation / 论文翻译
 
 **Purpose:** Translate academic papers while preserving citations, equations, and technical terms
 
@@ -465,6 +532,7 @@ Task(
 | `file` | Translate entire file |
 | `comments` | Translate code comments |
 | `comments-batch` | Batch translate comments in directory |
+| `scan` | Scan for non-ASCII characters (find Chinese comments) |
 | `paper` | Translate academic paper |
 | `help` | Show translation help |
 
@@ -511,6 +579,46 @@ def helper():
 # This is a helper function
 def helper():
     pass
+```
+
+### Example 4: Scan for Non-English Characters
+
+```bash
+# User: 找出所有中文注释
+/translate scan src/
+
+# Output:
+src/auth.py:23 # 用户认证模块
+src/auth.py:45 # 验证 token 有效性
+src/database.py:12 # 数据库连接池配置
+src/utils.py:89 error_msg = "连接失败"
+
+找到 4 处非英文字符
+
+# Agent workflow (programmatic):
+Task(skill="translate", args="scan src/")
+
+# Then translate all found locations:
+Task(skill="translate", args="comments src/**/*.py zh en")
+```
+
+### Example 5: Complete Translation Workflow
+
+```bash
+# Step 1: Engineer scans for Chinese comments
+Task(skill="translate", args="scan src/")
+→ Finds 15 locations with Chinese text
+
+# Step 2: Review locations and decide to translate
+# User confirms: "Yes, translate all to English"
+
+# Step 3: Batch translate comments
+Task(skill="translate", args="comments-batch src/ zh en")
+→ Translates all Chinese comments to English
+
+# Step 4: Verify completion
+Task(skill="translate", args="scan src/")
+→ No non-ASCII characters found (all translated)
 ```
 
 ---
@@ -572,9 +680,11 @@ When reading foreign language documentation or papers:
 - Use `/translate paper` for academic papers
 - Use `/translate file` for technical docs
 - Use `/translate text` for code comments
+- Use `/translate scan` to find non-English text
 
 Example:
 Task(skill="translate", args="paper arxiv-paper.pdf en zh")
+Task(skill="translate", args="scan docs/")
 ```
 
 ### Engineer Agent
@@ -585,12 +695,21 @@ Task(skill="translate", args="paper arxiv-paper.pdf en zh")
 ## Available Skills
 
 ### Translation
-When creating bilingual documentation:
+When creating bilingual documentation or cleaning up code:
+- Use `/translate scan` to find all Chinese comments (pre-translation audit)
 - Use `/translate file` for README translation
 - Use `/translate comments` for code comment translation
+- Use `/translate scan` again to verify all translated (QA)
 
 Example:
+# Find all Chinese comments first
+Task(skill="translate", args="scan src/")
+
+# Translate them
 Task(skill="translate", args="comments src/**/*.py zh en")
+
+# Verify completion
+Task(skill="translate", args="scan src/")
 ```
 
 ---
@@ -603,16 +722,20 @@ Task(skill="translate", args="comments src/**/*.py zh en")
 - ✅ Smart interactive translation
 - ✅ Auto-inject translation prompt
 
-### v0.2.0 (Planned)
-- Terminology dictionary
-- Translation memory
-- Quality levels (1-3)
-- Batch processing optimization
+### v0.2.0 (Current)
+- ✅ Non-ASCII character scanner (find Chinese comments)
+- ✅ Pre-translation audit workflow
+- ✅ Post-translation verification
+- 🔄 Terminology dictionary (in progress)
+- 🔄 Translation memory (in progress)
+- 🔄 Quality levels (1-3) (planned)
+- 🔄 Batch processing optimization (planned)
 
 ### v0.3.0 (Planned)
 - Paper translation (PDF support)
 - Bilingual glossary generation
 - Custom translation engine support
+- Comment-only scan mode (filter out non-comment non-ASCII)
 
 ---
 

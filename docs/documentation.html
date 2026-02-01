@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squad Documentation - Token-Efficient Multi-Agent Framework</title>
+    <meta name="description" content="Complete documentation for Squad - a token-efficient multi-agent orchestration framework for Claude Code and Cursor IDE. Learn about agents, routing, skills, and advanced features.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="favicon-512.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cyber-blue: #00D9FF;
+            --electric-blue: #0099FF;
+            --terminal-green: #00FF41;
+            --neon-orange: #FF6B35;
+            --danger-red: #FF3366;
+            --command-black: #0a0e1a;
+            --tactical-gray: #1a1f2e;
+            --hud-border: #2a3f5f;
+            --glow-cyan: rgba(0, 217, 255, 0.6);
+            --glow-green: rgba(0, 255, 65, 0.4);
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--command-black);
+            color: #e8e8e8;
+            line-height: 1.7;
+        }
+
+        /* Grid background */
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(0, 217, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Header */
+        .doc-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 14, 26, 0.95);
+            border-bottom: 1px solid var(--hud-border);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .doc-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--cyber-blue), var(--terminal-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.2em;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--hud-border);
+            border-radius: 50px;
+            color: #e8e8e8;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--cyber-blue);
+            background: rgba(0, 217, 255, 0.1);
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--cyber-blue);
+            pointer-events: none;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--cyber-blue);
+            border-radius: 50px;
+            padding: 0.3rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .lang-btn:hover {
+            color: var(--cyber-blue);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue));
+            color: var(--command-black);
+            box-shadow: 0 0 15px var(--glow-cyan);
+        }
+
+        /* Layout */
+        .doc-layout {
+            display: flex;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 70px;
+            width: var(--sidebar-width);
+            height: calc(100vh - 70px);
+            background: rgba(26, 31, 46, 0.6);
+            border-right: 1px solid var(--hud-border);
+            overflow-y: auto;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--hud-border);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--cyber-blue);
+        }
+
+        .nav-section {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--hud-border);
+        }
+
+        .nav-section:last-child {
+            border-bottom: none;
+        }
+
+        .nav-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--terminal-green);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 0 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.6rem 1.5rem;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: var(--cyber-blue);
+            background: rgba(0, 217, 255, 0.05);
+            border-left-color: var(--cyber-blue);
+        }
+
+        .nav-link.active {
+            color: var(--cyber-blue);
+            background: rgba(0, 217, 255, 0.1);
+            border-left-color: var(--cyber-blue);
+        }
+
+        .nav-sublink {
+            padding-left: 2.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 3rem;
+            max-width: 1000px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Documentation Sections */
+        .doc-section {
+            margin-bottom: 4rem;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        .doc-section.hidden {
+            display: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--terminal-green);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Typography */
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--cyber-blue);
+            margin: 2rem 0 1rem;
+        }
+
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--electric-blue);
+            margin: 1.5rem 0 1rem;
+        }
+
+        h4 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            color: var(--terminal-green);
+            margin: 1rem 0 0.5rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: var(--cyber-blue);
+            font-weight: 600;
+        }
+
+        em {
+            color: var(--terminal-green);
+            font-style: normal;
+        }
+
+        /* Code blocks */
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 217, 255, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--cyber-blue);
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: rgba(26, 31, 46, 0.8);
+            border: 1px solid var(--hud-border);
+            border-left: 4px solid var(--cyber-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e8e8e8;
+            display: block;
+            line-height: 1.6;
+        }
+
+        .code-header {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .code-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--terminal-green);
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--cyber-blue);
+            color: var(--cyber-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 217, 255, 0.2);
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+
+        .copy-btn.copied {
+            background: var(--terminal-green);
+            color: var(--command-black);
+            border-color: var(--terminal-green);
+        }
+
+        /* Info boxes */
+        .info-box {
+            background: rgba(0, 217, 255, 0.05);
+            border-left: 4px solid var(--cyber-blue);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box.warning {
+            background: rgba(255, 107, 53, 0.05);
+            border-left-color: var(--neon-orange);
+        }
+
+        .info-box.success {
+            background: rgba(0, 255, 65, 0.05);
+            border-left-color: var(--terminal-green);
+        }
+
+        .info-box-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--cyber-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box.warning .info-box-title {
+            color: var(--neon-orange);
+        }
+
+        .info-box.success .info-box-title {
+            color: var(--terminal-green);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(26, 31, 46, 0.4);
+            border: 1px solid var(--hud-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        th {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--cyber-blue);
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid var(--hud-border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--hud-border);
+            color: rgba(255,255,255,0.8);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        /* Agent cards */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .agent-card {
+            background: linear-gradient(145deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 153, 255, 0.02) 100%);
+            border: 2px solid var(--hud-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyber-blue);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue));
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .agent-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: var(--cyber-blue);
+        }
+
+        .agent-role {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--terminal-green);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .agent-desc {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .agent-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--cyber-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--cyber-blue);
+        }
+
+        /* Skills grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .skill-item {
+            background: rgba(26, 31, 46, 0.6);
+            border: 1px solid var(--hud-border);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+
+        .skill-item:hover {
+            border-color: var(--cyber-blue);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .skill-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--cyber-blue);
+            margin-bottom: 0.3rem;
+        }
+
+        .skill-desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue));
+            border: none;
+            border-radius: 50%;
+            color: var(--command-black);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px var(--glow-cyan);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--glow-cyan);
+        }
+
+        .back-to-top.visible {
+            display: flex;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                transition: left 0.3s;
+                background: rgba(10, 14, 26, 0.98);
+                z-index: 999;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                bottom: 2rem;
+                left: 2rem;
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue));
+                border: none;
+                border-radius: 50%;
+                color: var(--command-black);
+                font-size: 1.5rem;
+                cursor: pointer;
+                z-index: 1000;
+                box-shadow: 0 5px 20px var(--glow-cyan);
+            }
+
+            .main-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .doc-header {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .search-container {
+                order: 3;
+                width: 100%;
+                max-width: none;
+                margin-top: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            pre {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Syntax highlighting */
+        .keyword { color: #ff79c6; }
+        .string { color: #50fa7b; }
+        .comment { color: #6272a4; }
+        .function { color: #8be9fd; }
+        .number { color: #bd93f9; }
+        .operator { color: #ff5555; }
+    </style>
+</head>
+<body>
+    <div class="grid-background"></div>
+
+    <!-- Header -->
+    <header class="doc-header">
+        <a href="index.html" class="doc-logo">SQUAD DOCS</a>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text"
+                   class="search-box"
+                   id="searchInput"
+                   placeholder="搜索功能、智能体、命令..."
+                   data-placeholder-en="Search features, agents, commands..."
+                   data-placeholder-zh="搜索功能、智能体、命令...">
+        </div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="zh" onclick="switchLanguage('zh')">中</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
+        </div>
+    </header>
+
+    <div class="doc-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.start">快速开始</div>
+                <a href="#quick-start" class="nav-link" data-i18n="nav.quickstart">快速开始</a>
+                <a href="#installation" class="nav-link" data-i18n="nav.installation">安装指南</a>
+                <a href="#first-task" class="nav-link" data-i18n="nav.firsttask">第一个任务</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.core">核心概念</div>
+                <a href="#architecture" class="nav-link" data-i18n="nav.architecture">架构概览</a>
+                <a href="#routing" class="nav-link" data-i18n="nav.routing">路由机制</a>
+                <a href="#tags" class="nav-link" data-i18n="nav.tags">标签系统</a>
+                <a href="#persistent" class="nav-link" data-i18n="nav.persistent">持久模式</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.agents">智能体</div>
+                <a href="#agent-designer" class="nav-link" data-i18n="nav.designer">🎨 设计师</a>
+                <a href="#agent-researcher" class="nav-link" data-i18n="nav.researcher">🔍 研究员</a>
+                <a href="#agent-engineer" class="nav-link" data-i18n="nav.engineer">💻 工程师</a>
+                <a href="#agent-tester" class="nav-link" data-i18n="nav.tester">🚦 测试员</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.skills">技能系统</div>
+                <a href="#skills-overview" class="nav-link" data-i18n="nav.skillsoverview">技能概览</a>
+                <a href="#skills-frontend" class="nav-link nav-sublink" data-i18n="nav.skillsfrontend">前端设计类</a>
+                <a href="#skills-docs" class="nav-link nav-sublink" data-i18n="nav.skillsdocs">文档处理类</a>
+                <a href="#skills-dev" class="nav-link nav-sublink" data-i18n="nav.skillsdev">开发工具类</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.commands">命令参考</div>
+                <a href="#cmd-squad" class="nav-link" data-i18n="nav.cmdsquad">/squad</a>
+                <a href="#cmd-config" class="nav-link" data-i18n="nav.cmdconfig">/squad config</a>
+                <a href="#cmd-reflect" class="nav-link" data-i18n="nav.cmdreflect">/squad reflect</a>
+                <a href="#cmd-exit" class="nav-link" data-i18n="nav.cmdexit">/exit</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.config">配置</div>
+                <a href="#config-language" class="nav-link" data-i18n="nav.configlang">语言设置</a>
+                <a href="#config-permissions" class="nav-link" data-i18n="nav.configperm">权限级别</a>
+                <a href="#config-router" class="nav-link" data-i18n="nav.configrouter">路由规则</a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title" data-i18n="nav.usecases">使用场景</div>
+                <a href="#use-explore" class="nav-link" data-i18n="nav.useexplore">探索代码库</a>
+                <a href="#use-implement" class="nav-link" data-i18n="nav.useimplement">实现功能</a>
+                <a href="#use-testing" class="nav-link" data-i18n="nav.usetesting">运行测试</a>
+                <a href="#use-workflow" class="nav-link" data-i18n="nav.useworkflow">多任务工作流</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Quick Start -->
+            <section id="quick-start" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.start.label">/// 快速开始</div>
+                    <h1 class="section-title" data-i18n="section.start.title">Squad 文档</h1>
+                    <p class="section-desc" data-i18n="section.start.desc">
+                        Squad 是一个 token-efficient 的多智能体编排框架，为 Claude Code 和 Cursor IDE 设计。通过智能路由和串行执行，Squad 帮助你高效地协调专业 AI 智能体完成开发任务。
+                    </p>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title" data-i18n="quickstart.supported">✅ 多 IDE 支持</div>
+                    <ul>
+                        <li data-i18n="quickstart.claude">Claude Code - 完整支持</li>
+                        <li data-i18n="quickstart.cursor">Cursor IDE - 完整支持</li>
+                        <li data-i18n="quickstart.auto">自动检测 - Squad 在运行时自动识别 IDE 环境</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Installation -->
+            <section id="installation" class="doc-section">
+                <h2 data-i18n="install.title">安装指南</h2>
+
+                <h3 data-i18n="install.method">安装方法</h3>
+                <pre><code id="install-example" class="language-bash"><span class="comment"># 克隆仓库</span>
+git clone https://github.com/yourusername/squad.git
+cd squad
+
+<span class="comment"># 安装</span>
+./install.sh
+
+<span class="comment"># 验证安装</span>
+ls ~/.claude/rules/00-squad-core.md</code></pre>
+
+                <div class="info-box">
+                    <div class="info-box-title" data-i18n="install.what">安装器会执行以下操作：</div>
+                    <ol>
+                        <li data-i18n="install.step1">同时安装到 Claude Code (~/.claude/) 和 Cursor IDE (~/.cursor/)</li>
+                        <li data-i18n="install.step2">复制规则、智能体和命令到两个 IDE 目录</li>
+                        <li data-i18n="install.step3">在 ~/.squad/ 创建共享的路由配置</li>
+                        <li data-i18n="install.step4">可选：为两个 IDE 添加文件权限</li>
+                    </ol>
+                </div>
+
+                <h3 data-i18n="install.first">首次配置</h3>
+                <p data-i18n="install.wizard">运行配置向导：</p>
+                <pre><code class="language-bash">/squad config</code></pre>
+                <p data-i18n="install.choose">选择：</p>
+                <ul>
+                    <li data-i18n="install.lang"><strong>语言</strong> - 中文或 English</li>
+                    <li data-i18n="install.perm"><strong>权限级别</strong> - Conservative（保守）、Balanced（平衡）或 Autonomous（自主）</li>
+                </ul>
+            </section>
+
+            <!-- First Task -->
+            <section id="first-task" class="doc-section">
+                <h2 data-i18n="first.title">第一个任务</h2>
+
+                <h3 data-i18n="first.persistent">持久模式（推荐）</h3>
+                <pre><code id="persistent-mode-example" class="language-bash"><span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 现在所有消息自动路由</span>
+修复登录按钮                    → 💻 @工程师:前端
+优化数据库查询                   → 💻 @工程师:后端
+查找认证代码                     → 🔍 @研究员:代码库
+
+<span class="comment"># 退出持久模式</span>
+/exit</code></pre>
+
+                <h3 data-i18n="first.single">单次模式</h3>
+                <pre><code id="single-shot-example" class="language-bash"><span class="comment"># 执行一次任务后退出</span>
+/squad 修复登录按钮
+
+<span class="comment"># 手动指定智能体</span>
+/squad @engineer:backend 优化查询</code></pre>
+            </section>
+
+            <!-- Architecture -->
+            <section id="architecture" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.core.label">/// 核心概念</div>
+                    <h2 class="section-title" data-i18n="arch.title">架构概览</h2>
+                </div>
+
+                <p data-i18n="arch.desc">Squad 采用简洁的串行执行模型，通过智能路由将任务分配给最合适的智能体：</p>
+
+                <pre><code>用户请求
+    ↓
+路由器（任务分析）
+    ↓
+智能体选择（带标签）
+    ↓
+串行执行
+    ↓
+结果聚合</code></pre>
+
+                <h3 data-i18n="arch.principle">核心原则</h3>
+                <ul>
+                    <li data-i18n="arch.p1"><strong>Token 效率优先</strong> - 串行执行而非并行，最小化 token 消耗</li>
+                    <li data-i18n="arch.p2"><strong>智能路由</strong> - 关键词匹配自动选择最优智能体</li>
+                    <li data-i18n="arch.p3"><strong>专业分工</strong> - 每个智能体专注于特定领域</li>
+                    <li data-i18n="arch.p4"><strong>渐进复杂性</strong> - 从简单开始，按需扩展</li>
+                </ul>
+            </section>
+
+            <!-- Routing -->
+            <section id="routing" class="doc-section">
+                <h2 data-i18n="routing.title">路由机制</h2>
+
+                <h3 data-i18n="routing.how">工作原理</h3>
+                <p data-i18n="routing.desc">Squad 分析你的任务描述，通过关键词匹配自动路由到合适的智能体：</p>
+
+                <pre><code>任务: "修复登录按钮"
+  ↓
+检测关键词: [按钮, 登录, 修复]
+  ↓
+匹配: frontend（按钮 → UI 工作）
+  ↓
+路由: 工程师:前端 💻
+  ↓
+使用前端专用指令执行</code></pre>
+
+                <h3 data-i18n="routing.priority">路由优先级</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="routing.prioritytable.level">优先级</th>
+                            <th data-i18n="routing.prioritytable.method">方法</th>
+                            <th data-i18n="routing.prioritytable.example">示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td data-i18n="routing.prioritytable.manual">手动指定</td>
+                            <td><code>/squad @engineer:frontend 添加暗色模式</code></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td data-i18n="routing.prioritytable.keyword">关键词匹配</td>
+                            <td data-i18n="routing.prioritytable.keywordex">自动检测 "按钮" → frontend</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td data-i18n="routing.prioritytable.fallback">默认回退</td>
+                            <td data-i18n="routing.prioritytable.fallbackex">无法匹配 → Engineer:fullstack</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 data-i18n="routing.visibility">路由可见性</h3>
+                <p data-i18n="routing.visibilitydesc">每个任务执行前都会显示路由决策：</p>
+                <pre><code>/squad 修复登录按钮
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 按钮实现
+   预期: 修复登录按钮对齐问题
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code></pre>
+
+                <div class="info-box">
+                    <div class="info-box-title" data-i18n="routing.verbose">详细模式</div>
+                    <p data-i18n="routing.verbosedesc">使用 <code>--verbose</code> 标志查看详细的路由分析过程：</p>
+                    <pre><code>/squad --verbose 修复登录按钮</code></pre>
+                </div>
+            </section>
+
+            <!-- Tags -->
+            <section id="tags" class="doc-section">
+                <h2 data-i18n="tags.title">标签系统</h2>
+                <p data-i18n="tags.desc">标签允许每个智能体拥有多个专业化变体，无需创建新的智能体。这样可以保持智能体数量少，同时提供精细的控制。</p>
+
+                <h3 data-i18n="tags.example">标签示例</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="tags.table.agent">智能体</th>
+                            <th data-i18n="tags.table.tag">标签</th>
+                            <th data-i18n="tags.table.purpose">用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-i18n="tags.table.designer">设计师</td>
+                            <td><code>ui</code></td>
+                            <td data-i18n="tags.table.designerui">视觉设计和 UI 一致性</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>ux</code></td>
+                            <td data-i18n="tags.table.designerux">用户体验和交互设计</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>accessibility</code></td>
+                            <td data-i18n="tags.table.designera11y">无障碍和 WCAG 合规</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="tags.table.engineer">工程师</td>
+                            <td><code>frontend</code></td>
+                            <td data-i18n="tags.table.engineerfe">UI/UX、组件、样式</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>backend</code></td>
+                            <td data-i18n="tags.table.engineerbe">API、数据库、服务器逻辑</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>fullstack</code></td>
+                            <td data-i18n="tags.table.engineerfs">通用实现（默认）</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="tags.table.tester">测试员</td>
+                            <td><code>unit</code></td>
+                            <td data-i18n="tags.table.testerunit">单元测试</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>integration</code></td>
+                            <td data-i18n="tags.table.testerint">集成测试</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><code>e2e</code></td>
+                            <td data-i18n="tags.table.testere2e">端到端测试</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Persistent Mode -->
+            <section id="persistent" class="doc-section">
+                <h2 data-i18n="persistent.title">持久模式</h2>
+                <p data-i18n="persistent.desc">持久模式让你一次激活 Squad，然后持续使用，无需每次都输入 <code>/squad</code>。这是推荐的使用方式。</p>
+
+                <h3 data-i18n="persistent.how">工作原理</h3>
+                <pre><code>/squad (无参数)
+    ↓
+进入持久模式
+    ↓
+所有用户输入 → 自动路由到 Squad
+    ↓
+/exit
+    ↓
+退出持久模式</code></pre>
+
+                <h3 data-i18n="persistent.benefits">优势</h3>
+                <ul>
+                    <li data-i18n="persistent.b1">✅ 一次激活，持续使用</li>
+                    <li data-i18n="persistent.b2">✅ 自然的对话流程</li>
+                    <li data-i18n="persistent.b3">✅ 无需每次输入 /squad</li>
+                    <li data-i18n="persistent.b4">✅ 适合长时间开发会话</li>
+                </ul>
+
+                <div class="info-box warning">
+                    <div class="info-box-title" data-i18n="persistent.note">注意</div>
+                    <p data-i18n="persistent.notedesc">在持久模式下，Squad 会检查每条消息是否以 <code>/</code> 开头。如果是命令，则正常处理；否则自动路由到 Squad。</p>
+                </div>
+            </section>
+
+            <!-- Agents Section -->
+            <section id="agent-designer" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.agents.label">/// 智能体详解</div>
+                    <h2 class="section-title" data-i18n="agents.title">4 个专业智能体</h2>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">🎨</div>
+                        <div>
+                            <div class="agent-name" data-i18n="agent.designer.name">设计师 / Designer</div>
+                            <div class="agent-role" data-i18n="agent.designer.role">设计评估专家</div>
+                        </div>
+                    </div>
+                    <p class="agent-desc" data-i18n="agent.designer.desc">
+                        负责设计评估、UX 审查和无障碍审计。你的设计顾问，确保视觉一致性、用户体验质量和 WCAG 合规性。
+                    </p>
+                    <div class="agent-tags">
+                        <span class="tag">ui</span>
+                        <span class="tag">ux</span>
+                        <span class="tag">accessibility</span>
+                    </div>
+                    <br>
+                    <p><strong data-i18n="agent.designer.model">模型:</strong> <span data-i18n="agent.designer.modelname">Haiku (高性价比)</span></p>
+                    <p><strong data-i18n="agent.designer.tools">工具:</strong> <span data-i18n="agent.designer.toolslist">Read, Glob, Grep (只读)</span></p>
+
+                    <h4 data-i18n="agent.designer.triggers">触发关键词</h4>
+                    <ul>
+                        <li data-i18n="agent.designer.t1">UI: design review, visual design, color scheme, typography</li>
+                        <li data-i18n="agent.designer.t2">UX: user experience, user flow, interaction, usability</li>
+                        <li data-i18n="agent.designer.t3">Accessibility: a11y, contrast, screen reader, WCAG</li>
+                        <li data-i18n="agent.designer.t4">中文: 设计评审, 视觉设计, 用户体验, 无障碍</li>
+                    </ul>
+
+                    <h4 data-i18n="agent.designer.examples">使用示例</h4>
+                    <pre><code id="designer-examples" class="language-bash"><span class="comment"># UI 设计评审</span>
+/squad @designer:ui 评审登录页面设计
+
+<span class="comment"># UX 用户体验分析</span>
+/squad @designer:ux 分析购物车流程的用户体验
+
+<span class="comment"># 无障碍审查</span>
+/squad @designer:accessibility 检查按钮的对比度和 ARIA 标签</code></pre>
+                </div>
+            </section>
+
+            <section id="agent-researcher" class="doc-section">
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">🔍</div>
+                        <div>
+                            <div class="agent-name" data-i18n="agent.researcher.name">研究员 / Researcher</div>
+                            <div class="agent-role" data-i18n="agent.researcher.role">代码情报专家</div>
+                        </div>
+                    </div>
+                    <p class="agent-desc" data-i18n="agent.researcher.desc">
+                        探索代码库、搜索文件、分析架构。你的侦察专家，在行动前发现模式、理解依赖关系并收集情报。
+                    </p>
+                    <div class="agent-tags">
+                        <span class="tag">codebase</span>
+                        <span class="tag">documentation</span>
+                    </div>
+                    <br>
+                    <p><strong data-i18n="agent.researcher.model">模型:</strong> <span data-i18n="agent.researcher.modelname">Haiku (高性价比)</span></p>
+                    <p><strong data-i18n="agent.researcher.tools">工具:</strong> <span data-i18n="agent.researcher.toolslist">Read, Glob, Grep, WebSearch</span></p>
+
+                    <h4 data-i18n="agent.researcher.triggers">触发关键词</h4>
+                    <ul>
+                        <li data-i18n="agent.researcher.t1">explore, find, search, understand, analyze, investigate</li>
+                        <li data-i18n="agent.researcher.t2">中文: 探索, 查找, 搜索, 理解, 分析, 调查</li>
+                    </ul>
+
+                    <h4 data-i18n="agent.researcher.examples">使用示例</h4>
+                    <pre><code id="researcher-examples" class="language-bash"><span class="comment"># 探索代码库</span>
+/squad 查找用户认证的实现位置
+
+<span class="comment"># 分析架构</span>
+/squad @researcher:codebase 分析支付模块的依赖关系
+
+<span class="comment"># 查找文档</span>
+/squad @researcher:documentation 找到 API 参考文档</code></pre>
+                </div>
+            </section>
+
+            <section id="agent-engineer" class="doc-section">
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">💻</div>
+                        <div>
+                            <div class="agent-name" data-i18n="agent.engineer.name">工程师 / Engineer</div>
+                            <div class="agent-role" data-i18n="agent.engineer.role">代码实现专家</div>
+                        </div>
+                    </div>
+                    <p class="agent-desc" data-i18n="agent.engineer.desc">
+                        实现功能、修复 Bug、编写代码。你的实战专家，精通前端、后端和全栈操作。完成任务。
+                    </p>
+                    <div class="agent-tags">
+                        <span class="tag">frontend</span>
+                        <span class="tag">backend</span>
+                        <span class="tag">fullstack</span>
+                    </div>
+                    <br>
+                    <p><strong data-i18n="agent.engineer.model">模型:</strong> <span data-i18n="agent.engineer.modelname">Sonnet (默认) / Opus (复杂任务)</span></p>
+                    <p><strong data-i18n="agent.engineer.tools">工具:</strong> <span data-i18n="agent.engineer.toolslist">Read, Write, Edit, Bash, Glob, Grep</span></p>
+
+                    <h4 data-i18n="agent.engineer.triggers">触发关键词</h4>
+                    <ul>
+                        <li data-i18n="agent.engineer.t1">General: implement, add, create, build, fix, update, refactor</li>
+                        <li data-i18n="agent.engineer.t2">Frontend: ui, button, page, component, style, css, react, vue</li>
+                        <li data-i18n="agent.engineer.t3">Backend: api, database, query, server, endpoint, sql, auth</li>
+                        <li data-i18n="agent.engineer.t4">中文: 实现, 添加, 创建, 修复, 更新, 重构</li>
+                    </ul>
+
+                    <h4 data-i18n="agent.engineer.examples">使用示例</h4>
+                    <pre><code id="engineer-examples" class="language-bash"><span class="comment"># 前端开发</span>
+/squad @engineer:frontend 添加暗色模式切换按钮
+
+<span class="comment"># 后端开发</span>
+/squad @engineer:backend 优化用户查询的数据库性能
+
+<span class="comment"># 全栈开发</span>
+/squad 实现密码重置功能</code></pre>
+                </div>
+            </section>
+
+            <section id="agent-tester" class="doc-section">
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">🚦</div>
+                        <div>
+                            <div class="agent-name" data-i18n="agent.tester.name">测试员 / Tester</div>
+                            <div class="agent-role" data-i18n="agent.tester.role">质量保证专家</div>
+                        </div>
+                    </div>
+                    <p class="agent-desc" data-i18n="agent.tester.desc">
+                        运行测试、验证构建、确保质量。你的 QA 专家，通过单元测试、集成测试和端到端测试协议验证每次部署。
+                    </p>
+                    <div class="agent-tags">
+                        <span class="tag">unit</span>
+                        <span class="tag">integration</span>
+                        <span class="tag">e2e</span>
+                    </div>
+                    <br>
+                    <p><strong data-i18n="agent.tester.model">模型:</strong> <span data-i18n="agent.tester.modelname">Haiku (高性价比)</span></p>
+                    <p><strong data-i18n="agent.tester.tools">工具:</strong> <span data-i18n="agent.tester.toolslist">Read, Bash, Glob</span></p>
+
+                    <h4 data-i18n="agent.tester.triggers">触发关键词</h4>
+                    <ul>
+                        <li data-i18n="agent.tester.t1">test, verify, check, validate, run tests, build</li>
+                        <li data-i18n="agent.tester.t2">中文: 测试, 验证, 检查, 运行测试, 构建</li>
+                    </ul>
+
+                    <h4 data-i18n="agent.tester.examples">使用示例</h4>
+                    <pre><code id="tester-examples" class="language-bash"><span class="comment"># 单元测试</span>
+/squad @tester:unit 运行 auth 模块的单元测试
+
+<span class="comment"># 集成测试</span>
+/squad @tester:integration 测试支付流程的集成
+
+<span class="comment"># 端到端测试</span>
+/squad @tester:e2e 运行登录到结账的完整流程测试</code></pre>
+                </div>
+            </section>
+
+            <!-- Skills -->
+            <section id="skills-overview" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.skills.label">/// 技能系统</div>
+                    <h2 class="section-title" data-i18n="skills.title">16+ 专业技能模块</h2>
+                    <p class="section-desc" data-i18n="skills.desc">
+                        Skills 是智能体可以调用的专业化工具。与智能体（处理完整工作流）不同，Skills 提供聚焦的实用功能。
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-title" data-i18n="skills.what">什么是 Skills?</div>
+                    <p data-i18n="skills.whatdesc">Skills 是可扩展、即插即用的专业化能力模块。智能体根据任务需求动态调用相应的 Skills，实现更强大和灵活的功能。</p>
+                </div>
+            </section>
+
+            <section id="skills-frontend" class="doc-section">
+                <h2 data-i18n="skills.frontend.title">前端设计类 (7个)</h2>
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-name">frontend-design</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.design">创建独特、生产级前端界面，高设计质量</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">web-artifacts-builder</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.artifacts">构建复杂多组件 HTML artifacts (React, Tailwind, shadcn/ui)</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">canvas-design</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.canvas">创建美观的视觉艺术 (.png, .pdf)</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">algorithmic-art</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.art">使用 p5.js 创建算法艺术</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">theme-factory</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.theme">为 artifacts 应用主题样式 (10+ 预设主题)</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">brand-guidelines</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.brand">应用 Anthropic 官方品牌色和字体</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">slack-gif-creator</div>
+                        <div class="skill-desc" data-i18n="skills.frontend.gif">创建优化的 Slack 动画 GIF</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="skills-docs" class="doc-section">
+                <h2 data-i18n="skills.docs.title">文档处理类 (5个)</h2>
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-name">doc-coauthoring</div>
+                        <div class="skill-desc" data-i18n="skills.docs.coauthor">结构化文档协作工作流</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">pdf</div>
+                        <div class="skill-desc" data-i18n="skills.docs.pdf">PDF 操作工具包（提取、创建、合并、表单）</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">xlsx</div>
+                        <div class="skill-desc" data-i18n="skills.docs.xlsx">电子表格创建、编辑和分析</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">docx</div>
+                        <div class="skill-desc" data-i18n="skills.docs.docx">Word 文档创建、编辑和跟踪更改</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">pptx</div>
+                        <div class="skill-desc" data-i18n="skills.docs.pptx">演示文稿创建、编辑和分析</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="skills-dev" class="doc-section">
+                <h2 data-i18n="skills.dev.title">开发工具类 (4个)</h2>
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-name">webapp-testing</div>
+                        <div class="skill-desc" data-i18n="skills.dev.testing">使用 Playwright 测试本地 Web 应用</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">mcp-builder</div>
+                        <div class="skill-desc" data-i18n="skills.dev.mcp">构建高质量 MCP 服务器</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">skill-creator</div>
+                        <div class="skill-desc" data-i18n="skills.dev.creator">创建有效的 Squad Skills</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">keybindings-help</div>
+                        <div class="skill-desc" data-i18n="skills.dev.keys">自定义键盘快捷键</div>
+                    </div>
+                </div>
+
+                <h3 data-i18n="skills.other.title">其他工具 (2个)</h3>
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-name">translate</div>
+                        <div class="skill-desc" data-i18n="skills.other.translate">智能翻译（代码、文档、学术论文）</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">internal-comms</div>
+                        <div class="skill-desc" data-i18n="skills.other.comms">内部沟通模板和格式</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Commands -->
+            <section id="cmd-squad" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.commands.label">/// 命令参考</div>
+                    <h2 class="section-title" data-i18n="commands.title">所有命令</h2>
+                </div>
+
+                <h3>/squad</h3>
+                <p data-i18n="cmd.squad.desc">进入持久模式或执行单次任务</p>
+
+                <h4 data-i18n="cmd.squad.syntax">语法</h4>
+                <pre><code class="language-bash"><span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 单次执行</span>
+/squad [任务描述]
+
+<span class="comment"># 手动指定智能体和标签</span>
+/squad @[智能体]:[标签] [任务描述]
+
+<span class="comment"># 选项</span>
+/squad --verbose [任务]     <span class="comment"># 显示详细路由分析</span>
+/squad --help               <span class="comment"># 显示帮助信息</span>
+/squad --lang zh            <span class="comment"># 使用中文（当前命令）</span></code></pre>
+
+                <h4 data-i18n="cmd.squad.examples">示例</h4>
+                <pre><code id="cmd-squad-single" class="language-bash"><span class="comment"># 自动路由</span>
+/squad 修复登录按钮
+
+<span class="comment"># 手动指定</span>
+/squad @researcher 查找认证代码
+/squad @engineer:backend 优化数据库
+/squad @tester:unit 运行测试</code></pre>
+            </section>
+
+            <section id="cmd-config" class="doc-section">
+                <h3>/squad config</h3>
+                <p data-i18n="cmd.config.desc">交互式配置向导</p>
+
+                <h4 data-i18n="cmd.config.what">配置内容</h4>
+                <ul>
+                    <li data-i18n="cmd.config.lang"><strong>语言偏好</strong> - 中文或 English</li>
+                    <li data-i18n="cmd.config.perm"><strong>权限级别</strong> - Conservative, Balanced, Autonomous</li>
+                </ul>
+
+                <pre><code class="language-bash">/squad config</code></pre>
+            </section>
+
+            <section id="cmd-reflect" class="doc-section">
+                <h3>/squad reflect</h3>
+                <p data-i18n="cmd.reflect.desc">分析性能并提出改进建议</p>
+
+                <h4 data-i18n="cmd.reflect.features">功能</h4>
+                <ul>
+                    <li data-i18n="cmd.reflect.f1">分析对话表现（哪些做得好/可以改进）</li>
+                    <li data-i18n="cmd.reflect.f2">识别改进机会</li>
+                    <li data-i18n="cmd.reflect.f3">生成高置信度建议（低回归风险）</li>
+                    <li data-i18n="cmd.reflect.f4">谨慎应用批准的更改</li>
+                    <li data-i18n="cmd.reflect.f5">完整备份和回滚支持</li>
+                </ul>
+
+                <pre><code id="cmd-reflect-example" class="language-bash"><span class="comment"># 反思和改进</span>
+/squad reflect
+
+<span class="comment"># 回滚到之前的版本</span>
+/squad rollback abc123</code></pre>
+            </section>
+
+            <section id="cmd-exit" class="doc-section">
+                <h3>/exit</h3>
+                <p data-i18n="cmd.exit.desc">退出 Squad 持久模式</p>
+
+                <h4 data-i18n="cmd.exit.aliases">别名</h4>
+                <pre><code class="language-bash">/exit
+/quit
+/squad exit</code></pre>
+            </section>
+
+            <!-- Configuration -->
+            <section id="config-language" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.config.label">/// 配置指南</div>
+                    <h2 class="section-title" data-i18n="config.title">配置 Squad</h2>
+                </div>
+
+                <h3 data-i18n="config.lang.title">语言设置</h3>
+                <p data-i18n="config.lang.desc">Squad 原生支持中文和英文。</p>
+
+                <h4 data-i18n="config.lang.via">通过配置向导</h4>
+                <pre><code class="language-bash">/squad config</code></pre>
+
+                <h4 data-i18n="config.lang.cmd">通过命令</h4>
+                <pre><code id="config-lang-cmd" class="language-bash"><span class="comment"># 切换到中文</span>
+/squad set-lang zh
+
+<span class="comment"># 切换到英文</span>
+/squad set-lang en</code></pre>
+
+                <h4 data-i18n="config.lang.manual">手动编辑</h4>
+                <p data-i18n="config.lang.manualdesc">编辑 <code>~/.squad/config.yaml</code>：</p>
+                <pre><code class="language-yaml">language: zh  <span class="comment"># en | zh</span></code></pre>
+            </section>
+
+            <section id="config-permissions" class="doc-section">
+                <h2 data-i18n="config.perm.title">权限级别</h2>
+                <p data-i18n="config.perm.desc">Squad 支持三种权限级别来控制智能体的自主程度：</p>
+
+                <div class="agent-grid">
+                    <div class="agent-card">
+                        <h3>🛡️ Conservative (保守)</h3>
+                        <p><strong data-i18n="config.perm.c.phil">理念:</strong> <span data-i18n="config.perm.c.phildesc">安全第一，手动控制</span></p>
+                        <h4 data-i18n="config.perm.c.behavior">行为</h4>
+                        <ul>
+                            <li data-i18n="config.perm.c.b1">✋ 每次文件操作前询问</li>
+                            <li data-i18n="config.perm.c.b2">✋ 所有命令执行前询问</li>
+                            <li data-i18n="config.perm.c.b3">✋ Git 操作前询问</li>
+                            <li data-i18n="config.perm.c.b4">✅ 自动允许只读操作</li>
+                        </ul>
+                        <p><strong data-i18n="config.perm.c.best">适用于:</strong> <span data-i18n="config.perm.c.bestdesc">学习、关键项目、严格变更管理</span></p>
+                    </div>
+
+                    <div class="agent-card">
+                        <h3>⚖️ Balanced (平衡) - 推荐</h3>
+                        <p><strong data-i18n="config.perm.b.phil">理念:</strong> <span data-i18n="config.perm.b.phildesc">信任但验证关键操作</span></p>
+                        <h4 data-i18n="config.perm.b.behavior">行为</h4>
+                        <ul>
+                            <li data-i18n="config.perm.b.b1">✅ 自动允许常见操作（创建/编辑文件、运行测试、git commit）</li>
+                            <li data-i18n="config.perm.b.b2">✋ 删除文件前询问</li>
+                            <li data-i18n="config.perm.b.b3">✋ Git push 前询问</li>
+                            <li data-i18n="config.perm.b.b4">✋ 破坏性命令前询问</li>
+                        </ul>
+                        <p><strong data-i18n="config.perm.b.best">适用于:</strong> <span data-i18n="config.perm.b.bestdesc">日常开发、大多数项目</span></p>
+                    </div>
+
+                    <div class="agent-card">
+                        <h3>🚀 Autonomous (自主)</h3>
+                        <p><strong data-i18n="config.perm.a.phil">理念:</strong> <span data-i18n="config.perm.a.phildesc">全自动化，最小干预</span></p>
+                        <h4 data-i18n="config.perm.a.behavior">行为</h4>
+                        <ul>
+                            <li data-i18n="config.perm.a.b1">✅ 自动允许所有操作</li>
+                            <li data-i18n="config.perm.a.b2">⚠️ 详细日志记录</li>
+                            <li data-i18n="config.perm.a.b3">🛟 破坏性操作前自动备份</li>
+                            <li data-i18n="config.perm.a.b4">📝 清晰的提交信息</li>
+                        </ul>
+                        <p><strong data-i18n="config.perm.a.best">适用于:</strong> <span data-i18n="config.perm.a.bestdesc">长期项目（24+ 小时）、原型开发</span></p>
+                        <div class="info-box warning">
+                            <p data-i18n="config.perm.a.warning">⚠️ 谨慎使用 - 需要高信任度</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 data-i18n="config.perm.set">设置权限级别</h3>
+                <pre><code id="config-perm-cmd" class="language-bash"><span class="comment"># 通过配置向导</span>
+/squad config
+
+<span class="comment"># 或手动编辑</span>
+<span class="comment"># ~/.squad/config.yaml</span>
+language: zh
+permission_level: balanced</code></pre>
+
+                <pre><code class="language-yaml">permission_level: balanced  <span class="comment"># conservative | balanced | autonomous</span>
+
+permissions:
+  allow_file_create: true
+  allow_file_edit: true
+  allow_file_delete: false
+  allow_git_commit: true
+  allow_git_push: false
+  allow_commands: true
+  allow_destructive_commands: false
+  allow_config_changes: false</code></pre>
+            </section>
+
+            <section id="config-router" class="doc-section">
+                <h2 data-i18n="config.router.title">路由规则自定义</h2>
+                <p data-i18n="config.router.desc">编辑 <code>~/.squad/router.yaml</code> 自定义路由规则：</p>
+
+                <pre><code class="language-yaml">engineer:
+  frontend:
+    keywords:
+      - ui
+      - button
+      - page
+      - component
+      - style
+      - css
+      - html
+      - react
+      - vue
+  backend:
+    keywords:
+      - api
+      - database
+      - query
+      - server
+      - endpoint
+      - sql
+      - auth
+  fullstack:
+    default: true
+
+researcher:
+  codebase:
+    keywords:
+      - explore
+      - find
+      - search
+      - understand
+      - analyze
+    default: true
+  documentation:
+    keywords:
+      - docs
+      - readme
+      - manual
+      - guide
+
+tester:
+  unit:
+    keywords:
+      - test
+      - verify
+      - check
+    default: true
+  integration:
+    keywords:
+      - integration
+      - api test
+  e2e:
+    keywords:
+      - e2e
+      - end-to-end
+      - selenium</code></pre>
+
+                <div class="info-box">
+                    <div class="info-box-title" data-i18n="config.router.extensible">可扩展性</div>
+                    <p data-i18n="config.router.extensibledesc">添加你自己的关键词、模式和规则。未来版本将支持正则表达式模式和置信度评分。</p>
+                </div>
+            </section>
+
+            <!-- Use Cases -->
+            <section id="use-explore" class="doc-section">
+                <div class="section-header">
+                    <div class="section-label" data-i18n="section.usecases.label">/// 使用场景</div>
+                    <h2 class="section-title" data-i18n="usecases.title">实战示例</h2>
+                </div>
+
+                <h3 data-i18n="use.explore.title">场景 1: 探索代码库</h3>
+                <pre><code id="usecase-explore-1" class="language-bash">/squad 查找用户认证的实现位置
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 @研究员:代码库
+   原因: 需要定位和分析认证相关代码
+   预期: 返回认证模块文件列表和流程概览
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 研究员执行搜索...</span>
+
+✓ 任务完成 (12 秒)
+
+📋 认证实现位置:
+  - src/auth/login.ts:42 (主要逻辑)
+  - src/middleware/auth.ts:15 (中间件)
+  - src/api/auth.ts:23 (API 端点)
+
+架构概览:
+  登录流程: login.ts → 验证凭据 → 生成 JWT
+  中间件: 每个受保护路由验证 token
+  API: /api/auth/login, /api/auth/logout, /api/auth/refresh</code></pre>
+            </section>
+
+            <section id="use-implement" class="doc-section">
+                <h3 data-i18n="use.implement.title">场景 2: 实现新功能</h3>
+                <pre><code id="usecase-implement" class="language-bash">/squad @engineer:frontend 添加暗色模式切换按钮
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 @工程师:前端
+   原因: UI 组件实现，需要前端开发技能
+   预期: 可交互的主题切换按钮，支持本地存储
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 工程师开始实现...</span>
+
+▶ 实现中...
+  ├─ 创建 ThemeToggle.tsx 组件
+  ├─ 添加样式和动画效果
+  ├─ 集成到 Header 组件
+  └─ 添加 localStorage 持久化
+
+✓ 任务完成 (45 秒)
+
+文件变更:
+✓ src/components/ThemeToggle.tsx (新建)
+✓ src/components/Header.tsx (已修改)
+✓ src/styles/themes.css (已修改)
+
+功能说明:
+- 点击按钮切换亮色/暗色模式
+- 使用 localStorage 保存用户偏好
+- 平滑过渡动画 (0.3s ease)</code></pre>
+            </section>
+
+            <section id="use-testing" class="doc-section">
+                <h3 data-i18n="use.testing.title">场景 3: 运行测试</h3>
+                <pre><code id="usecase-testing" class="language-bash">/squad 运行所有测试
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▸ SQUAD | 路由决策
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚦 @测试员:单元
+   原因: 验证代码质量和测试覆盖率
+   预期: 所有测试通过 + 覆盖率报告
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="comment"># 测试员执行测试套件...</span>
+
+▶ 执行中...
+  ├─ 运行单元测试
+  ├─ 运行集成测试
+  └─ 生成覆盖率报告
+
+✓ 任务完成 (23 秒)
+
+测试结果:
+  总计: 42 个测试
+  通过: 42 ✅
+  失败: 0
+
+覆盖率:
+  语句: 87.3%
+  分支: 82.1%
+  函数: 91.5%
+  行: 86.8%
+
+构建: ✅ 成功</code></pre>
+            </section>
+
+            <section id="use-workflow" class="doc-section">
+                <h3 data-i18n="use.workflow.title">场景 4: 多任务工作流</h3>
+                <pre><code id="usecase-workflow" class="language-bash"><span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 1. 探索代码库</span>
+查找用户认证的实现           → 🔍 @研究员:代码库
+
+<span class="comment"># 2. 设计新功能</span>
+评审暗色模式设计方案          → 🎨 @设计师:界面
+
+<span class="comment"># 3. 实现功能</span>
+添加暗色模式切换按钮          → 💻 @工程师:前端
+
+<span class="comment"># 4. 运行测试</span>
+运行前端单元测试              → 🚦 @测试员:单元
+
+<span class="comment"># 5. 完成</span>
+/exit</code></pre>
+            </section>
+
+            <!-- Footer -->
+            <section class="doc-section" style="margin-top: 6rem; padding-top: 3rem; border-top: 1px solid var(--hud-border);">
+                <div style="text-align: center;">
+                    <h2 style="margin-bottom: 1rem;" data-i18n="footer.ready">准备开始？</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 2rem;" data-i18n="footer.cta">
+                        安装 Squad，激活你的 AI 小队，主导开发流程。
+                    </p>
+                    <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="https://github.com/yourusername/squad" style="display: inline-flex; align-items: center; gap: 0.8rem; padding: 1rem 2rem; background: linear-gradient(135deg, var(--cyber-blue), var(--electric-blue)); color: var(--command-black); text-decoration: none; font-family: 'Orbitron', sans-serif; font-weight: 700; border-radius: 50px; transition: all 0.3s;">
+                            <span data-i18n="footer.github">GitHub 仓库</span>
+                        </a>
+                        <a href="index.html" style="display: inline-flex; align-items: center; gap: 0.8rem; padding: 1rem 2rem; background: transparent; color: var(--cyber-blue); border: 2px solid var(--cyber-blue); text-decoration: none; font-family: 'Orbitron', sans-serif; font-weight: 700; border-radius: 50px; transition: all 0.3s;">
+                            <span data-i18n="footer.home">返回首页</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="menu-toggle" onclick="toggleSidebar()" style="display: none;">☰</button>
+
+    <!-- Back to top button -->
+    <button class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <!-- No results message (hidden by default) -->
+    <div class="no-results" id="noResults" style="display: none;">
+        <div class="no-results-icon">🔍</div>
+        <h3 data-i18n="search.noresults">未找到匹配结果</h3>
+        <p data-i18n="search.tryagain">尝试使用不同的关键词</p>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            zh: {
+                // Navigation
+                'nav.start': '快速开始',
+                'nav.quickstart': '快速开始',
+                'nav.installation': '安装指南',
+                'nav.firsttask': '第一个任务',
+                'nav.core': '核心概念',
+                'nav.architecture': '架构概览',
+                'nav.routing': '路由机制',
+                'nav.tags': '标签系统',
+                'nav.persistent': '持久模式',
+                'nav.agents': '智能体',
+                'nav.designer': '🎨 设计师',
+                'nav.researcher': '🔍 研究员',
+                'nav.engineer': '💻 工程师',
+                'nav.tester': '🚦 测试员',
+                'nav.skills': '技能系统',
+                'nav.skillsoverview': '技能概览',
+                'nav.skillsfrontend': '前端设计类',
+                'nav.skillsdocs': '文档处理类',
+                'nav.skillsdev': '开发工具类',
+                'nav.commands': '命令参考',
+                'nav.cmdsquad': '/squad',
+                'nav.cmdconfig': '/squad config',
+                'nav.cmdreflect': '/squad reflect',
+                'nav.cmdexit': '/exit',
+                'nav.config': '配置',
+                'nav.configlang': '语言设置',
+                'nav.configperm': '权限级别',
+                'nav.configrouter': '路由规则',
+                'nav.usecases': '使用场景',
+                'nav.useexplore': '探索代码库',
+                'nav.useimplement': '实现功能',
+                'nav.usetesting': '运行测试',
+                'nav.useworkflow': '多任务工作流',
+
+                // Search and Footer
+                'search.noresults': '未找到匹配结果',
+                'search.tryagain': '尝试使用不同的关键词',
+                'footer.ready': '准备开始？',
+                'footer.cta': '安装 Squad，激活你的 AI 小队，主导开发流程。',
+                'footer.github': 'GitHub 仓库',
+                'footer.home': '返回首页',
+
+                // Quick Start Section
+                'section.start.label': '/// 快速开始',
+                'section.start.title': 'Squad 文档',
+                'section.start.desc': 'Squad 是一个 token-efficient 的多智能体编排框架，为 Claude Code 和 Cursor IDE 设计。通过智能路由和串行执行，Squad 帮助你高效地协调专业 AI 智能体完成开发任务。',
+                'quickstart.supported': '✅ 多 IDE 支持',
+                'quickstart.claude': 'Claude Code - 完整支持',
+                'quickstart.cursor': 'Cursor IDE - 完整支持',
+                'quickstart.auto': '自动检测 - Squad 在运行时自动识别 IDE 环境',
+
+                // Installation
+                'install.title': '安装指南',
+                'install.method': '安装方法',
+                'install.what': '安装器会执行以下操作：',
+                'install.step1': '同时安装到 Claude Code (~/.claude/) 和 Cursor IDE (~/.cursor/)',
+                'install.step2': '复制规则、智能体和命令到两个 IDE 目录',
+                'install.step3': '在 ~/.squad/ 创建共享的路由配置',
+                'install.step4': '可选：为两个 IDE 添加文件权限',
+                'install.first': '首次配置',
+                'install.wizard': '运行配置向导：',
+                'install.choose': '选择：',
+                'install.lang': '<strong>语言</strong> - 中文或 English',
+                'install.perm': '<strong>权限级别</strong> - Conservative（保守）、Balanced（平衡）或 Autonomous（自主）',
+
+                // First Task
+                'first.title': '第一个任务',
+                'first.persistent': '持久模式（推荐）',
+                'first.single': '单次模式',
+
+                // Architecture
+                'section.core.label': '/// 核心概念',
+                'arch.title': '架构概览',
+                'arch.desc': 'Squad 采用简洁的串行执行模型，通过智能路由将任务分配给最合适的智能体：',
+                'arch.principle': '核心原则',
+                'arch.p1': '<strong>Token 效率优先</strong> - 串行执行而非并行，最小化 token 消耗',
+                'arch.p2': '<strong>智能路由</strong> - 关键词匹配自动选择最优智能体',
+                'arch.p3': '<strong>专业分工</strong> - 每个智能体专注于特定领域',
+                'arch.p4': '<strong>渐进复杂性</strong> - 从简单开始，按需扩展',
+
+                // Routing
+                'routing.title': '路由机制',
+                'routing.how': '工作原理',
+                'routing.desc': 'Squad 分析你的任务描述，通过关键词匹配自动路由到合适的智能体：',
+                'routing.priority': '路由优先级',
+                'routing.prioritytable.level': '优先级',
+                'routing.prioritytable.method': '方法',
+                'routing.prioritytable.example': '示例',
+                'routing.prioritytable.manual': '手动指定',
+                'routing.prioritytable.keyword': '关键词匹配',
+                'routing.prioritytable.keywordex': '自动检测 "按钮" → frontend',
+                'routing.prioritytable.fallback': '默认回退',
+                'routing.prioritytable.fallbackex': '无法匹配 → Engineer:fullstack',
+                'routing.visibility': '路由可见性',
+                'routing.visibilitydesc': '每个任务执行前都会显示路由决策：',
+                'routing.verbose': '详细模式',
+                'routing.verbosedesc': '使用 <code>--verbose</code> 标志查看详细的路由分析过程：',
+
+                // Tags
+                'tags.title': '标签系统',
+                'tags.desc': '标签允许每个智能体拥有多个专业化变体，无需创建新的智能体。这样可以保持智能体数量少，同时提供精细的控制。',
+                'tags.example': '标签示例',
+                'tags.table.agent': '智能体',
+                'tags.table.tag': '标签',
+                'tags.table.purpose': '用途',
+                'tags.table.designer': '设计师',
+                'tags.table.designerui': '视觉设计和 UI 一致性',
+                'tags.table.designerux': '用户体验和交互设计',
+                'tags.table.designera11y': '无障碍和 WCAG 合规',
+                'tags.table.engineer': '工程师',
+                'tags.table.engineerfe': 'UI/UX、组件、样式',
+                'tags.table.engineerbe': 'API、数据库、服务器逻辑',
+                'tags.table.engineerfs': '通用实现（默认）',
+                'tags.table.tester': '测试员',
+                'tags.table.testerunit': '单元测试',
+                'tags.table.testerint': '集成测试',
+                'tags.table.testere2e': '端到端测试',
+
+                // Persistent Mode
+                'persistent.title': '持久模式',
+                'persistent.desc': '持久模式让你一次激活 Squad，然后持续使用，无需每次都输入 <code>/squad</code>。这是推荐的使用方式。',
+                'persistent.how': '工作原理',
+                'persistent.benefits': '优势',
+                'persistent.b1': '✅ 一次激活，持续使用',
+                'persistent.b2': '✅ 自然的对话流程',
+                'persistent.b3': '✅ 无需每次输入 /squad',
+                'persistent.b4': '✅ 适合长时间开发会话',
+                'persistent.note': '注意',
+                'persistent.notedesc': '在持久模式下，Squad 会检查每条消息是否以 <code>/</code> 开头。如果是命令，则正常处理；否则自动路由到 Squad。',
+
+                // Agents Section
+                'section.agents.label': '/// 智能体详解',
+                'agents.title': '4 个专业智能体',
+
+                // Designer Agent
+                'agent.designer.name': '设计师 / Designer',
+                'agent.designer.role': '设计评估专家',
+                'agent.designer.desc': '负责设计评估、UX 审查和无障碍审计。你的设计顾问，确保视觉一致性、用户体验质量和 WCAG 合规性。',
+                'agent.designer.model': '模型:',
+                'agent.designer.modelname': 'Haiku (高性价比)',
+                'agent.designer.tools': '工具:',
+                'agent.designer.toolslist': 'Read, Glob, Grep (只读)',
+                'agent.designer.triggers': '触发关键词',
+                'agent.designer.t1': 'UI: design review, visual design, color scheme, typography',
+                'agent.designer.t2': 'UX: user experience, user flow, interaction, usability',
+                'agent.designer.t3': 'Accessibility: a11y, contrast, screen reader, WCAG',
+                'agent.designer.t4': '中文: 设计评审, 视觉设计, 用户体验, 无障碍',
+                'agent.designer.examples': '使用示例',
+
+                // Researcher Agent
+                'agent.researcher.name': '研究员 / Researcher',
+                'agent.researcher.role': '代码情报专家',
+                'agent.researcher.desc': '探索代码库、搜索文件、分析架构。你的侦察专家，在行动前发现模式、理解依赖关系和收集情报。',
+                'agent.researcher.model': '模型:',
+                'agent.researcher.modelname': 'Haiku (高性价比)',
+                'agent.researcher.tools': '工具:',
+                'agent.researcher.toolslist': 'Read, Glob, Grep, WebSearch',
+                'agent.researcher.triggers': '触发关键词',
+                'agent.researcher.t1': 'explore, find, search, understand, analyze, investigate',
+                'agent.researcher.t2': '中文: 探索, 查找, 搜索, 理解, 分析, 调查',
+                'agent.researcher.examples': '使用示例',
+
+                // Engineer Agent
+                'agent.engineer.name': '工程师 / Engineer',
+                'agent.engineer.role': '代码实现专家',
+                'agent.engineer.desc': '实现功能、修复 Bug、编写代码。你的战术专家，精通前端、后端和全栈操作。完成任务。',
+                'agent.engineer.model': '模型:',
+                'agent.engineer.modelname': 'Sonnet (默认) / Opus (复杂任务)',
+                'agent.engineer.tools': '工具:',
+                'agent.engineer.toolslist': 'Read, Write, Edit, Bash, Glob, Grep',
+                'agent.engineer.triggers': '触发关键词',
+                'agent.engineer.t1': '通用: implement, add, create, build, fix, update, refactor',
+                'agent.engineer.t2': '前端: ui, button, page, component, style, css, react, vue',
+                'agent.engineer.t3': '后端: api, database, query, server, endpoint, sql, auth',
+                'agent.engineer.t4': '中文: 实现, 添加, 创建, 修复, 更新, 重构',
+                'agent.engineer.examples': '使用示例',
+
+                // Tester Agent
+                'agent.tester.name': '测试员 / Tester',
+                'agent.tester.role': '质量保证专家',
+                'agent.tester.desc': '运行测试、验证构建、确保质量。你的 QA 专家，通过单元、集成和端到端测试协议验证每次部署。',
+                'agent.tester.model': '模型:',
+                'agent.tester.modelname': 'Haiku (高性价比)',
+                'agent.tester.tools': '工具:',
+                'agent.tester.toolslist': 'Read, Bash, Glob',
+                'agent.tester.triggers': '触发关键词',
+                'agent.tester.t1': 'test, verify, check, validate, run tests, build',
+                'agent.tester.t2': '中文: 测试, 验证, 检查, 运行测试, 构建',
+                'agent.tester.examples': '使用示例',
+
+                // Skills Section
+                'section.skills.label': '/// 技能系统',
+                'skills.title': '16+ 专业技能模块',
+                'skills.desc': '技能是智能体可以调用的专业能力。与智能体（处理完整工作流程）不同，技能提供专注的实用功能。',
+                'skills.what': '什么是技能？',
+                'skills.whatdesc': '技能是可扩展、即插即用的专业能力模块。智能体根据任务需求动态调用合适的技能，实现更强大、更灵活的功能。',
+
+                // Skills - Frontend Design
+                'skills.frontend.title': '前端设计类 (7 个技能)',
+                'skills.frontend.design': '创建独特的生产级前端界面，设计质量高',
+                'skills.frontend.artifacts': '构建复杂的多组件 HTML 工件 (React, Tailwind, shadcn/ui)',
+                'skills.frontend.canvas': '创建精美的视觉艺术 (.png, .pdf)',
+                'skills.frontend.art': '使用 p5.js 创建算法艺术',
+                'skills.frontend.theme': '将主题样式应用于工件 (10+ 个预设主题)',
+                'skills.frontend.brand': '应用 Anthropic 官方品牌颜色和字体',
+                'skills.frontend.gif': '创建优化的 Slack 动画 GIF',
+
+                // Skills - Document Processing
+                'skills.docs.title': '文档处理类 (5 个技能)',
+                'skills.docs.coauthor': '结构化文档协作工作流',
+                'skills.docs.pdf': 'PDF 工具包 (提取、创建、合并、表单)',
+                'skills.docs.xlsx': '电子表格创建、编辑和分析',
+                'skills.docs.docx': 'Word 文档创建、编辑和修订追踪',
+                'skills.docs.pptx': '演示文稿创建、编辑和分析',
+
+                // Skills - Development Tools
+                'skills.dev.title': '开发工具类 (4 个技能)',
+                'skills.dev.testing': '使用 Playwright 测试本地 Web 应用',
+                'skills.dev.mcp': '构建高质量 MCP 服务器',
+                'skills.dev.creator': '创建有效的 Squad 技能',
+                'skills.dev.keys': '自定义键盘快捷键',
+
+                // Skills - Other Tools
+                'skills.other.title': '其他工具 (2 个技能)',
+                'skills.other.translate': '智能翻译 (代码、文档、学术论文)',
+                'skills.other.comms': '内部沟通模板和格式',
+
+                // Commands Section
+                'section.commands.label': '/// 命令参考',
+                'commands.title': '所有命令',
+
+                // /squad command
+                'cmd.squad.desc': '进入持久模式或执行单个任务',
+                'cmd.squad.syntax': '语法',
+                'cmd.squad.examples': '示例',
+
+                // /squad config
+                'cmd.config.desc': '配置 Squad 设置',
+                'cmd.config.what': '可以配置的内容：',
+                'cmd.config.lang': '<strong>语言</strong> - 界面语言 (中文/英文)',
+                'cmd.config.perm': '<strong>权限级别</strong> - 智能体的自主程度',
+
+                // /squad reflect
+                'cmd.reflect.desc': '分析 Squad 性能并进化行为',
+                'cmd.reflect.features': '功能：',
+                'cmd.reflect.f1': '分析对话表现',
+                'cmd.reflect.f2': '识别改进机会',
+                'cmd.reflect.f3': '生成高置信度提案',
+                'cmd.reflect.f4': '应用更改并完整备份',
+                'cmd.reflect.f5': '支持回滚（如需要）',
+
+                // /exit command
+                'cmd.exit.desc': '退出 Squad 持久模式',
+                'cmd.exit.aliases': '别名：',
+
+                // Configuration Section Header
+                'section.config.label': '/// 配置指南',
+                'config.title': '配置 Squad',
+
+                // Configuration - Language
+                'config.lang.title': '语言设置',
+                'config.lang.desc': 'Squad 支持中文和英文。你可以随时切换。',
+                'config.lang.via': '通过以下方式设置：',
+                'config.lang.cmd': '命令：',
+                'config.lang.manual': '手动编辑：',
+                'config.lang.manualdesc': '编辑 <code>~/.squad/config.yaml</code>：',
+
+                // Configuration - Permission Levels
+                'config.perm.title': '权限级别',
+                'config.perm.desc': '控制智能体在任务执行过程中的自主程度。',
+                'config.perm.set': '设置权限级别',
+                'config.perm.c.title': '🛡️ 保守模式',
+                'config.perm.c.phil': '理念：',
+                'config.perm.c.phildesc': '安全第一，手动控制',
+                'config.perm.c.behavior': '行为：',
+                'config.perm.c.b1': '✋ 每次文件操作前询问',
+                'config.perm.c.b2': '✋ 所有命令前询问',
+                'config.perm.c.b3': '✋ Git 操作前询问',
+                'config.perm.c.b4': '✅ 自动允许只读操作',
+                'config.perm.c.best': '最适合：',
+                'config.perm.c.bestdesc': '学习阶段、关键项目、严格的变更管理',
+                'config.perm.b.title': '⚖️ 平衡模式（推荐）',
+                'config.perm.b.phil': '理念：',
+                'config.perm.b.phildesc': '信任但验证关键操作',
+                'config.perm.b.behavior': '行为：',
+                'config.perm.b.b1': '✅ 自动允许常见操作 (创建/编辑文件、运行测试、git commit)',
+                'config.perm.b.b2': '✋ 删除文件前询问',
+                'config.perm.b.b3': '✋ Git push 前询问',
+                'config.perm.b.b4': '✋ 破坏性命令前询问',
+                'config.perm.b.best': '最适合：',
+                'config.perm.b.bestdesc': '日常开发、大多数项目',
+                'config.perm.a.title': '🚀 自主模式',
+                'config.perm.a.phil': '理念：',
+                'config.perm.a.phildesc': '完全自动化，最少干预',
+                'config.perm.a.behavior': '行为：',
+                'config.perm.a.b1': '✅ 自动允许所有操作',
+                'config.perm.a.b2': '⚠️ 启用详细日志',
+                'config.perm.a.b3': '🛟 破坏性操作前自动备份',
+                'config.perm.a.b4': '📝 清晰的提交信息',
+                'config.perm.a.best': '最适合：',
+                'config.perm.a.bestdesc': '长期运行项目 (24+ 小时)、原型开发、独立项目',
+                'config.perm.a.warning': '⚠️ 谨慎使用 - 需要高度信任',
+
+                // Configuration - Router
+                'config.router.title': '路由规则',
+                'config.router.desc': '自定义 Squad 如何将任务路由到智能体。路由系统可扩展，基于关键词匹配。',
+                'config.router.file': '配置文件：',
+                'config.router.filedesc': '编辑 <code>~/.squad/router.yaml</code> 添加自定义关键词：',
+                'config.router.example': '示例：添加自定义关键词',
+                'config.router.reload': '更改后重新加载：',
+                'config.router.extensible': '可扩展性',
+                'config.router.extensibledesc': '添加你自己的关键词、模式和规则。未来版本将支持正则表达式模式和置信度评分。',
+
+                // Use Cases
+                'section.usecases.label': '/// 使用场景',
+                'usecases.title': '真实世界场景',
+                'usecases.desc': '了解 Squad 如何处理常见的开发工作流程。',
+                'use.explore.title': '探索未知代码库',
+                'use.explore.desc': '当你加入新项目或遇到不熟悉的代码时，让研究员为你绘制地图：',
+                'use.explore.agent': '智能体：',
+                'use.explore.workflow': '工作流程：',
+                'use.explore.w1': '识别入口点和主要模块',
+                'use.explore.w2': '映射依赖关系和数据流',
+                'use.explore.w3': '定位关键文件和配置',
+                'use.explore.w4': '生成架构概览',
+                'use.implement.title': '实现新功能',
+                'use.implement.desc': '通过多智能体协作端到端构建功能：',
+                'use.implement.workflow': '多智能体工作流程：',
+                'use.implement.w1': '🔍 研究员 - 分析现有代码和依赖关系',
+                'use.implement.w2': '💻 工程师 - 实现功能 (按标签自动路由)',
+                'use.implement.w3': '🚦 测试员 - 运行测试并验证功能',
+                'use.testing.title': '运行测试 & CI/CD',
+                'use.testing.desc': '自动化测试工作流程并解释结果：',
+                'use.testing.agent': '智能体：',
+                'use.testing.workflow': '工作流程：',
+                'use.testing.w1': '执行测试套件 (单元/集成/端到端)',
+                'use.testing.w2': '解析测试输出并识别失败',
+                'use.testing.w3': '生成摘要报告',
+                'use.testing.w4': '建议修复失败的测试',
+                'use.workflow.title': '多任务开发会话',
+                'use.workflow.desc': '使用持久模式进行多个连续任务的扩展开发会话：',
+                'use.workflow.example': '示例会话：'
+            },
+            en: {
+                // Navigation
+                'nav.start': 'Quick Start',
+                'nav.quickstart': 'Quick Start',
+                'nav.installation': 'Installation',
+                'nav.firsttask': 'First Task',
+                'nav.core': 'Core Concepts',
+                'nav.architecture': 'Architecture',
+                'nav.routing': 'Routing',
+                'nav.tags': 'Tag System',
+                'nav.persistent': 'Persistent Mode',
+                'nav.agents': 'Agents',
+                'nav.designer': '🎨 Designer',
+                'nav.researcher': '🔍 Researcher',
+                'nav.engineer': '💻 Engineer',
+                'nav.tester': '🚦 Tester',
+                'nav.skills': 'Skills',
+                'nav.skillsoverview': 'Skills Overview',
+                'nav.skillsfrontend': 'Frontend Design',
+                'nav.skillsdocs': 'Document Processing',
+                'nav.skillsdev': 'Development Tools',
+                'nav.commands': 'Commands',
+                'nav.cmdsquad': '/squad',
+                'nav.cmdconfig': '/squad config',
+                'nav.cmdreflect': '/squad reflect',
+                'nav.cmdexit': '/exit',
+                'nav.config': 'Configuration',
+                'nav.configlang': 'Language Settings',
+                'nav.configperm': 'Permission Levels',
+                'nav.configrouter': 'Router Rules',
+                'nav.usecases': 'Use Cases',
+                'nav.useexplore': 'Explore Codebase',
+                'nav.useimplement': 'Implement Features',
+                'nav.usetesting': 'Run Tests',
+                'nav.useworkflow': 'Multi-Task Workflow',
+
+                // Search and Footer
+                'search.noresults': 'No results found',
+                'search.tryagain': 'Try different keywords',
+                'footer.ready': 'Ready to start?',
+                'footer.cta': 'Install Squad, activate your AI team, dominate development.',
+                'footer.github': 'GitHub Repository',
+                'footer.home': 'Back to Home',
+
+                // Quick Start Section
+                'section.start.label': '/// Quick Start',
+                'section.start.title': 'Squad Documentation',
+                'section.start.desc': 'Squad is a token-efficient multi-agent orchestration framework designed for Claude Code and Cursor IDE. Through intelligent routing and serial execution, Squad helps you efficiently coordinate specialized AI agents to complete development tasks.',
+                'quickstart.supported': '✅ Multi-IDE Support',
+                'quickstart.claude': 'Claude Code - Full Support',
+                'quickstart.cursor': 'Cursor IDE - Full Support',
+                'quickstart.auto': 'Auto-detection - Squad automatically identifies IDE environment at runtime',
+
+                // Installation
+                'install.title': 'Installation Guide',
+                'install.method': 'Installation Method',
+                'install.what': 'The installer will perform the following:',
+                'install.step1': 'Install simultaneously to Claude Code (~/.claude/) and Cursor IDE (~/.cursor/)',
+                'install.step2': 'Copy rules, agents, and commands to both IDE directories',
+                'install.step3': 'Create shared routing configuration in ~/.squad/',
+                'install.step4': 'Optional: Add file permissions for both IDEs',
+                'install.first': 'First-time Configuration',
+                'install.wizard': 'Run the configuration wizard:',
+                'install.choose': 'Choose:',
+                'install.lang': '<strong>Language</strong> - Chinese or English',
+                'install.perm': '<strong>Permission Level</strong> - Conservative, Balanced, or Autonomous',
+
+                // First Task
+                'first.title': 'Your First Task',
+                'first.persistent': 'Persistent Mode (Recommended)',
+                'first.single': 'Single-shot Mode',
+
+                // Architecture
+                'section.core.label': '/// Core Concepts',
+                'arch.title': 'Architecture Overview',
+                'arch.desc': 'Squad employs a simple serial execution model, intelligently routing tasks to the most appropriate agent:',
+                'arch.principle': 'Core Principles',
+                'arch.p1': '<strong>Token Efficiency First</strong> - Serial execution instead of parallel, minimizing token consumption',
+                'arch.p2': '<strong>Smart Routing</strong> - Keyword matching automatically selects the optimal agent',
+                'arch.p3': '<strong>Specialized Division of Labor</strong> - Each agent focuses on a specific domain',
+                'arch.p4': '<strong>Progressive Complexity</strong> - Start simple, expand as needed',
+
+                // Routing
+                'routing.title': 'Routing Mechanism',
+                'routing.how': 'How It Works',
+                'routing.desc': 'Squad analyzes your task description and automatically routes it to the appropriate agent through keyword matching:',
+                'routing.priority': 'Routing Priority',
+                'routing.prioritytable.level': 'Priority',
+                'routing.prioritytable.method': 'Method',
+                'routing.prioritytable.example': 'Example',
+                'routing.prioritytable.manual': 'Manual Override',
+                'routing.prioritytable.keyword': 'Keyword Matching',
+                'routing.prioritytable.keywordex': 'Auto-detect "button" → frontend',
+                'routing.prioritytable.fallback': 'Default Fallback',
+                'routing.prioritytable.fallbackex': 'No match → Engineer:fullstack',
+                'routing.visibility': 'Routing Visibility',
+                'routing.visibilitydesc': 'Routing decision is displayed before each task execution:',
+                'routing.verbose': 'Verbose Mode',
+                'routing.verbosedesc': 'Use the <code>--verbose</code> flag to see detailed routing analysis:',
+
+                // Tags
+                'tags.title': 'Tag System',
+                'tags.desc': 'Tags allow each agent to have multiple specialized variants without creating new agents. This keeps the agent count low while providing fine-grained control.',
+                'tags.example': 'Tag Examples',
+                'tags.table.agent': 'Agent',
+                'tags.table.tag': 'Tag',
+                'tags.table.purpose': 'Purpose',
+                'tags.table.designer': 'Designer',
+                'tags.table.designerui': 'Visual design and UI consistency',
+                'tags.table.designerux': 'User experience and interaction design',
+                'tags.table.designera11y': 'Accessibility and WCAG compliance',
+                'tags.table.engineer': 'Engineer',
+                'tags.table.engineerfe': 'UI/UX, components, styling',
+                'tags.table.engineerbe': 'APIs, databases, server logic',
+                'tags.table.engineerfs': 'General implementation (default)',
+                'tags.table.tester': 'Tester',
+                'tags.table.testerunit': 'Unit tests',
+                'tags.table.testerint': 'Integration tests',
+                'tags.table.testere2e': 'End-to-end tests',
+
+                // Persistent Mode
+                'persistent.title': 'Persistent Mode',
+                'persistent.desc': 'Persistent mode allows you to activate Squad once and use it continuously without typing <code>/squad</code> every time. This is the recommended usage method.',
+                'persistent.how': 'How It Works',
+                'persistent.benefits': 'Benefits',
+                'persistent.b1': '✅ Activate once, use continuously',
+                'persistent.b2': '✅ Natural conversation flow',
+                'persistent.b3': '✅ No need to type /squad every time',
+                'persistent.b4': '✅ Ideal for extended development sessions',
+                'persistent.note': 'Note',
+                'persistent.notedesc': 'In persistent mode, Squad checks if each message starts with <code>/</code>. If it\'s a command, it\'s processed normally; otherwise, it\'s automatically routed to Squad.',
+
+                // Agents Section
+                'section.agents.label': '/// Agent Details',
+                'agents.title': '4 Specialized Agents',
+
+                // Designer Agent
+                'agent.designer.name': 'Designer / 设计师',
+                'agent.designer.role': 'Design Evaluation Specialist',
+                'agent.designer.desc': 'Responsible for design evaluation, UX review, and accessibility auditing. Your design consultant, ensuring visual consistency, user experience quality, and WCAG compliance.',
+                'agent.designer.model': 'Model:',
+                'agent.designer.modelname': 'Haiku (cost-efficient)',
+                'agent.designer.tools': 'Tools:',
+                'agent.designer.toolslist': 'Read, Glob, Grep (read-only)',
+                'agent.designer.triggers': 'Trigger Keywords',
+                'agent.designer.t1': 'UI: design review, visual design, color scheme, typography',
+                'agent.designer.t2': 'UX: user experience, user flow, interaction, usability',
+                'agent.designer.t3': 'Accessibility: a11y, contrast, screen reader, WCAG',
+                'agent.designer.t4': 'Chinese: 设计评审, 视觉设计, 用户体验, 无障碍',
+                'agent.designer.examples': 'Usage Examples',
+
+                // Researcher Agent
+                'agent.researcher.name': 'Researcher / 研究员',
+                'agent.researcher.role': 'Code Intelligence Specialist',
+                'agent.researcher.desc': 'Explores codebases, searches files, analyzes architecture. Your reconnaissance specialist, discovering patterns, understanding dependencies, and gathering intelligence before action.',
+                'agent.researcher.model': 'Model:',
+                'agent.researcher.modelname': 'Haiku (cost-efficient)',
+                'agent.researcher.tools': 'Tools:',
+                'agent.researcher.toolslist': 'Read, Glob, Grep, WebSearch',
+                'agent.researcher.triggers': 'Trigger Keywords',
+                'agent.researcher.t1': 'explore, find, search, understand, analyze, investigate',
+                'agent.researcher.t2': 'Chinese: 探索, 查找, 搜索, 理解, 分析, 调查',
+                'agent.researcher.examples': 'Usage Examples',
+
+                // Engineer Agent
+                'agent.engineer.name': 'Engineer / 工程师',
+                'agent.engineer.role': 'Code Implementation Specialist',
+                'agent.engineer.desc': 'Implements features, fixes bugs, writes code. Your tactical specialist, proficient in frontend, backend, and fullstack operations. Gets things done.',
+                'agent.engineer.model': 'Model:',
+                'agent.engineer.modelname': 'Sonnet (default) / Opus (complex tasks)',
+                'agent.engineer.tools': 'Tools:',
+                'agent.engineer.toolslist': 'Read, Write, Edit, Bash, Glob, Grep',
+                'agent.engineer.triggers': 'Trigger Keywords',
+                'agent.engineer.t1': 'General: implement, add, create, build, fix, update, refactor',
+                'agent.engineer.t2': 'Frontend: ui, button, page, component, style, css, react, vue',
+                'agent.engineer.t3': 'Backend: api, database, query, server, endpoint, sql, auth',
+                'agent.engineer.t4': 'Chinese: 实现, 添加, 创建, 修复, 更新, 重构',
+                'agent.engineer.examples': 'Usage Examples',
+
+                // Tester Agent
+                'agent.tester.name': 'Tester / 测试员',
+                'agent.tester.role': 'Quality Assurance Specialist',
+                'agent.tester.desc': 'Runs tests, verifies builds, ensures quality. Your QA specialist, validating every deployment through unit, integration, and e2e testing protocols.',
+                'agent.tester.model': 'Model:',
+                'agent.tester.modelname': 'Haiku (cost-efficient)',
+                'agent.tester.tools': 'Tools:',
+                'agent.tester.toolslist': 'Read, Bash, Glob',
+                'agent.tester.triggers': 'Trigger Keywords',
+                'agent.tester.t1': 'test, verify, check, validate, run tests, build',
+                'agent.tester.t2': 'Chinese: 测试, 验证, 检查, 运行测试, 构建',
+                'agent.tester.examples': 'Usage Examples',
+
+                // Skills Section
+                'section.skills.label': '/// Skills System',
+                'skills.title': '16+ Professional Skill Modules',
+                'skills.desc': 'Skills are specialized capabilities that agents can invoke. Unlike agents (which handle complete workflows), Skills provide focused utilities.',
+                'skills.what': 'What are Skills?',
+                'skills.whatdesc': 'Skills are extensible, plug-and-play specialized capability modules. Agents dynamically invoke appropriate Skills based on task requirements, achieving more powerful and flexible functionality.',
+
+                // Skills - Frontend Design
+                'skills.frontend.title': 'Frontend Design (7 Skills)',
+                'skills.frontend.design': 'Create unique, production-grade frontend interfaces with high design quality',
+                'skills.frontend.artifacts': 'Build complex multi-component HTML artifacts (React, Tailwind, shadcn/ui)',
+                'skills.frontend.canvas': 'Create beautiful visual art (.png, .pdf)',
+                'skills.frontend.art': 'Create algorithmic art using p5.js',
+                'skills.frontend.theme': 'Apply themed styles to artifacts (10+ preset themes)',
+                'skills.frontend.brand': 'Apply Anthropic official brand colors and fonts',
+                'skills.frontend.gif': 'Create optimized Slack animated GIFs',
+
+                // Skills - Document Processing
+                'skills.docs.title': 'Document Processing (5 Skills)',
+                'skills.docs.coauthor': 'Structured document collaboration workflow',
+                'skills.docs.pdf': 'PDF toolkit (extract, create, merge, forms)',
+                'skills.docs.xlsx': 'Spreadsheet creation, editing, and analysis',
+                'skills.docs.docx': 'Word document creation, editing, and track changes',
+                'skills.docs.pptx': 'Presentation creation, editing, and analysis',
+
+                // Skills - Development Tools
+                'skills.dev.title': 'Development Tools (4 Skills)',
+                'skills.dev.testing': 'Test local web applications with Playwright',
+                'skills.dev.mcp': 'Build high-quality MCP servers',
+                'skills.dev.creator': 'Create effective Squad Skills',
+                'skills.dev.keys': 'Customize keyboard shortcuts',
+
+                // Skills - Other Tools
+                'skills.other.title': 'Other Tools (2 Skills)',
+                'skills.other.translate': 'Intelligent translation (code, docs, academic papers)',
+                'skills.other.comms': 'Internal communication templates and formats',
+
+                // Commands Section
+                'section.commands.label': '/// Command Reference',
+                'commands.title': 'All Commands',
+
+                // /squad command
+                'cmd.squad.desc': 'Enter persistent mode or execute a single task',
+                'cmd.squad.syntax': 'Syntax',
+                'cmd.squad.examples': 'Examples',
+
+                // /squad config
+                'cmd.config.desc': 'Configure Squad settings',
+                'cmd.config.what': 'What can be configured:',
+                'cmd.config.lang': '<strong>Language</strong> - Interface language (zh/en)',
+                'cmd.config.perm': '<strong>Permission Level</strong> - How much autonomy agents have',
+
+                // /squad reflect
+                'cmd.reflect.desc': 'Analyze Squad performance and evolve behavior',
+                'cmd.reflect.features': 'Features:',
+                'cmd.reflect.f1': 'Analyze conversation performance',
+                'cmd.reflect.f2': 'Identify improvement opportunities',
+                'cmd.reflect.f3': 'Generate high-confidence proposals',
+                'cmd.reflect.f4': 'Apply changes with full backup',
+                'cmd.reflect.f5': 'Rollback support if needed',
+
+                // /exit command
+                'cmd.exit.desc': 'Exit Squad persistent mode',
+                'cmd.exit.aliases': 'Aliases:',
+
+                // Configuration Section Header
+                'section.config.label': '/// Configuration Guide',
+                'config.title': 'Configuring Squad',
+
+                // Configuration - Language
+                'config.lang.title': 'Language Settings',
+                'config.lang.desc': 'Squad supports Chinese and English. You can switch at any time.',
+                'config.lang.via': 'Set via:',
+                'config.lang.cmd': 'Command:',
+                'config.lang.manual': 'Manual edit:',
+                'config.lang.manualdesc': 'Edit <code>~/.squad/config.yaml</code>:',
+
+                // Configuration - Permission Levels
+                'config.perm.title': 'Permission Levels',
+                'config.perm.desc': 'Control how much autonomy agents have during task execution.',
+                'config.perm.set': 'Set Permission Level',
+                'config.perm.c.title': '🛡️ Conservative',
+                'config.perm.c.phil': 'Philosophy:',
+                'config.perm.c.phildesc': 'Safety first, manual control',
+                'config.perm.c.behavior': 'Behavior:',
+                'config.perm.c.b1': '✋ Ask before every file operation',
+                'config.perm.c.b2': '✋ Ask before all commands',
+                'config.perm.c.b3': '✋ Ask before git operations',
+                'config.perm.c.b4': '✅ Auto-allow read-only operations',
+                'config.perm.c.best': 'Best for:',
+                'config.perm.c.bestdesc': 'Learning, critical projects, strict change management',
+                'config.perm.b.title': '⚖️ Balanced (Recommended)',
+                'config.perm.b.phil': 'Philosophy:',
+                'config.perm.b.phildesc': 'Trust but verify critical operations',
+                'config.perm.b.behavior': 'Behavior:',
+                'config.perm.b.b1': '✅ Auto-allow common operations (create/edit files, run tests, git commit)',
+                'config.perm.b.b2': '✋ Ask before deleting files',
+                'config.perm.b.b3': '✋ Ask before git push',
+                'config.perm.b.b4': '✋ Ask before destructive commands',
+                'config.perm.b.best': 'Best for:',
+                'config.perm.b.bestdesc': 'Daily development, most projects',
+                'config.perm.a.title': '🚀 Autonomous',
+                'config.perm.a.phil': 'Philosophy:',
+                'config.perm.a.phildesc': 'Full automation, minimal interruption',
+                'config.perm.a.behavior': 'Behavior:',
+                'config.perm.a.b1': '✅ Auto-allow all operations',
+                'config.perm.a.b2': '⚠️ Detailed logging enabled',
+                'config.perm.a.b3': '🛟 Auto-backup before destructive operations',
+                'config.perm.a.b4': '📝 Clear commit messages',
+                'config.perm.a.best': 'Best for:',
+                'config.perm.a.bestdesc': 'Long-running projects (24+ hours), prototyping, solo projects',
+                'config.perm.a.warning': '⚠️ Use with caution - requires high trust level',
+
+                // Configuration - Router
+                'config.router.title': 'Router Rules',
+                'config.router.desc': 'Customize how Squad routes tasks to agents. The routing system is extensible and based on keyword matching.',
+                'config.router.file': 'Configuration file:',
+                'config.router.filedesc': 'Edit <code>~/.squad/router.yaml</code> to add custom keywords:',
+                'config.router.example': 'Example: Adding custom keywords',
+                'config.router.reload': 'Reload after changes:',
+                'config.router.extensible': 'Extensibility',
+                'config.router.extensibledesc': 'Add your own keywords, patterns, and rules. Future versions will support regex patterns and confidence scoring.',
+
+                // Use Cases
+                'section.usecases.label': '/// Use Cases',
+                'usecases.title': 'Real-World Scenarios',
+                'usecases.desc': 'Learn how Squad handles common development workflows.',
+                'use.explore.title': 'Explore Unknown Codebase',
+                'use.explore.desc': 'When you join a new project or encounter unfamiliar code, let Researcher map it out:',
+                'use.explore.agent': 'Agent:',
+                'use.explore.workflow': 'Workflow:',
+                'use.explore.w1': 'Identify entry points and main modules',
+                'use.explore.w2': 'Map dependencies and data flow',
+                'use.explore.w3': 'Locate key files and configurations',
+                'use.explore.w4': 'Generate architecture summary',
+                'use.implement.title': 'Implement New Feature',
+                'use.implement.desc': 'Build features end-to-end with multi-agent collaboration:',
+                'use.implement.workflow': 'Multi-agent Workflow:',
+                'use.implement.w1': '🔍 Researcher - Analyze existing code and dependencies',
+                'use.implement.w2': '💻 Engineer - Implement the feature (auto-routed by tag)',
+                'use.implement.w3': '🚦 Tester - Run tests and verify functionality',
+                'use.testing.title': 'Run Tests & CI/CD',
+                'use.testing.desc': 'Automate testing workflows and interpret results:',
+                'use.testing.agent': 'Agent:',
+                'use.testing.workflow': 'Workflow:',
+                'use.testing.w1': 'Execute test suites (unit/integration/e2e)',
+                'use.testing.w2': 'Parse test output and identify failures',
+                'use.testing.w3': 'Generate summary reports',
+                'use.testing.w4': 'Suggest fixes for failing tests',
+                'use.workflow.title': 'Multi-Task Development Session',
+                'use.workflow.desc': 'Use persistent mode for extended development sessions with multiple sequential tasks:',
+                'use.workflow.example': 'Example Session:'
+            }
+        };
+
+        // Language switcher
+        function switchLanguage(lang) {
+            localStorage.setItem('preferredLanguage', lang);
+            document.documentElement.lang = lang;
+
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update text content
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    // Use innerHTML for keys that contain HTML tags, textContent for plain text
+                    if (translations[lang][key].includes('<')) {
+                        el.innerHTML = translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+
+            // Update search placeholder
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const placeholderKey = lang === 'zh' ? 'data-placeholder-zh' : 'data-placeholder-en';
+                searchInput.placeholder = searchInput.getAttribute(placeholderKey);
+            }
+
+            // Update code examples
+            updateCodeExamples(lang);
+        }
+
+        // Code examples with bilingual support
+        const codeExamples = {
+            'designer-examples': {
+                zh: `<span class="comment"># UI 设计评审</span>
+/squad @designer:ui 评审登录页面设计
+
+<span class="comment"># UX 用户体验分析</span>
+/squad @designer:ux 分析购物车流程的用户体验
+
+<span class="comment"># 无障碍审查</span>
+/squad @designer:accessibility 检查按钮的对比度和 ARIA 标签`,
+                en: `<span class="comment"># UI Design Review</span>
+/squad @designer:ui review login page design
+
+<span class="comment"># UX User Experience Analysis</span>
+/squad @designer:ux analyze shopping cart user experience
+
+<span class="comment"># Accessibility Audit</span>
+/squad @designer:accessibility check button contrast and ARIA labels`
+            },
+            'researcher-examples': {
+                zh: `<span class="comment"># 探索代码库</span>
+/squad 查找用户认证的实现位置
+
+<span class="comment"># 分析架构</span>
+/squad @researcher:codebase 分析支付模块的依赖关系
+
+<span class="comment"># 查找文档</span>
+/squad @researcher:documentation 找到 API 参考文档`,
+                en: `<span class="comment"># Explore Codebase</span>
+/squad find where user authentication is implemented
+
+<span class="comment"># Analyze Architecture</span>
+/squad @researcher:codebase analyze payment module dependencies
+
+<span class="comment"># Find Documentation</span>
+/squad @researcher:documentation locate API reference documentation`
+            },
+            'engineer-examples': {
+                zh: `<span class="comment"># 前端开发</span>
+/squad @engineer:frontend 添加暗色模式切换按钮
+
+<span class="comment"># 后端开发</span>
+/squad @engineer:backend 优化用户查询的数据库性能
+
+<span class="comment"># 全栈开发</span>
+/squad 实现密码重置功能`,
+                en: `<span class="comment"># Frontend Development</span>
+/squad @engineer:frontend add dark mode toggle button
+
+<span class="comment"># Backend Development</span>
+/squad @engineer:backend optimize database performance for user queries
+
+<span class="comment"># Fullstack Development</span>
+/squad implement password reset feature`
+            },
+            'tester-examples': {
+                zh: `<span class="comment"># 单元测试</span>
+/squad @tester:unit 运行 auth 模块的单元测试
+
+<span class="comment"># 集成测试</span>
+/squad @tester:integration 测试支付流程的集成
+
+<span class="comment"># 端到端测试</span>
+/squad @tester:e2e 运行登录到结账的完整流程测试`,
+                en: `<span class="comment"># Unit Tests</span>
+/squad @tester:unit run unit tests for auth module
+
+<span class="comment"># Integration Tests</span>
+/squad @tester:integration test payment flow integration
+
+<span class="comment"># End-to-End Tests</span>
+/squad @tester:e2e run complete flow from login to checkout`
+            },
+            'persistent-mode-example': {
+                zh: `<span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 现在所有消息自动路由</span>
+修复登录按钮                    → 💻 @工程师:前端
+优化数据库查询                   → 💻 @工程师:后端
+查找认证代码                     → 🔍 @研究员:代码库
+
+<span class="comment"># 退出持久模式</span>
+/exit`,
+                en: `<span class="comment"># Enter persistent mode</span>
+/squad
+
+<span class="comment"># Now all messages are auto-routed</span>
+fix login button                 → 💻 Engineer:frontend
+optimize database query          → 💻 Engineer:backend
+find auth code                   → 🔍 Researcher:codebase
+
+<span class="comment"># Exit persistent mode</span>
+/exit`
+            },
+            'single-shot-example': {
+                zh: `<span class="comment"># 执行一次任务后退出</span>
+/squad 修复登录按钮
+
+<span class="comment"># 手动指定智能体</span>
+/squad @engineer:backend 优化查询`,
+                en: `<span class="comment"># Execute once and exit</span>
+/squad fix login button
+
+<span class="comment"># Manually specify agent</span>
+/squad @engineer:backend optimize query`
+            },
+            'install-example': {
+                zh: `<span class="comment"># 克隆仓库</span>
+git clone https://github.com/yourusername/squad.git
+cd squad
+
+<span class="comment"># 安装</span>
+./install.sh
+
+<span class="comment"># 验证安装</span>
+ls ~/.claude/rules/00-squad-core.md`,
+                en: `<span class="comment"># Clone repository</span>
+git clone https://github.com/yourusername/squad.git
+cd squad
+
+<span class="comment"># Install</span>
+./install.sh
+
+<span class="comment"># Verify installation</span>
+ls ~/.claude/rules/00-squad-core.md`
+            },
+            'cmd-squad-persistent': {
+                zh: `<span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 现在所有消息自动路由到 Squad</span>
+修复登录 bug
+添加暗色模式
+运行测试
+
+<span class="comment"># 退出</span>
+/exit`,
+                en: `<span class="comment"># Enter persistent mode</span>
+/squad
+
+<span class="comment"># Now all messages auto-route to Squad</span>
+fix login bug
+add dark mode
+run tests
+
+<span class="comment"># Exit</span>
+/exit`
+            },
+            'cmd-squad-single': {
+                zh: `<span class="comment"># 自动路由</span>
+/squad 修复登录按钮
+
+<span class="comment"># 手动指定</span>
+/squad @researcher 查找认证代码
+/squad @engineer:backend 优化数据库
+/squad @tester:unit 运行测试`,
+                en: `<span class="comment"># Auto-routing</span>
+/squad fix login button
+
+<span class="comment"># Manual specification</span>
+/squad @researcher find auth code
+/squad @engineer:backend optimize database
+/squad @tester:unit run tests`
+            },
+            'cmd-reflect-example': {
+                zh: `<span class="comment"># 反思和改进</span>
+/squad reflect
+
+<span class="comment"># 回滚到之前的版本</span>
+/squad rollback abc123`,
+                en: `<span class="comment"># Reflect and improve</span>
+/squad reflect
+
+<span class="comment"># Rollback to previous version</span>
+/squad rollback abc123`
+            },
+            'config-lang-cmd': {
+                zh: `<span class="comment"># 切换到中文</span>
+/squad set-lang zh
+
+<span class="comment"># 切换到英文</span>
+/squad set-lang en`,
+                en: `<span class="comment"># Switch to Chinese</span>
+/squad set-lang zh
+
+<span class="comment"># Switch to English</span>
+/squad set-lang en`
+            },
+            'config-perm-cmd': {
+                zh: `<span class="comment"># 通过配置向导</span>
+/squad config
+
+<span class="comment"># 或手动编辑</span>
+<span class="comment"># ~/.squad/config.yaml</span>
+language: zh
+permission_level: balanced`,
+                en: `<span class="comment"># Via configuration wizard</span>
+/squad config
+
+<span class="comment"># Or manual edit</span>
+<span class="comment"># ~/.squad/config.yaml</span>
+language: en
+permission_level: balanced`
+            },
+            'usecase-explore-1': {
+                zh: `/squad 查找用户认证的实现位置`,
+                en: `/squad find where user authentication is implemented`
+            },
+            'usecase-explore-2': {
+                zh: `/squad @researcher:codebase 分析支付模块的依赖关系`,
+                en: `/squad @researcher:codebase analyze payment module dependencies`
+            },
+            'usecase-implement': {
+                zh: `/squad @engineer:frontend 添加暗色模式切换按钮`,
+                en: `/squad @engineer:frontend add dark mode toggle button`
+            },
+            'usecase-testing': {
+                zh: `/squad 运行所有测试`,
+                en: `/squad run all tests`
+            },
+            'usecase-workflow': {
+                zh: `<span class="comment"># 进入持久模式</span>
+/squad
+
+<span class="comment"># 1. 探索代码库</span>
+查找用户认证的实现           → 🔍 @研究员:代码库
+
+<span class="comment"># 2. 设计新功能</span>
+评审暗色模式设计方案          → 🎨 @设计师:界面
+
+<span class="comment"># 3. 实现功能</span>
+添加暗色模式切换按钮          → 💻 @工程师:前端
+
+<span class="comment"># 4. 运行测试</span>
+运行前端单元测试              → 🚦 @测试员:单元
+
+<span class="comment"># 5. 完成</span>
+/exit`,
+                en: `<span class="comment"># Enter persistent mode</span>
+/squad
+
+<span class="comment"># 1. Explore codebase</span>
+find user authentication       → 🔍 Researcher:codebase
+
+<span class="comment"># 2. Design new feature</span>
+review dark mode design        → 🎨 Designer:ui
+
+<span class="comment"># 3. Implement feature</span>
+add dark mode toggle button    → 💻 Engineer:frontend
+
+<span class="comment"># 4. Run tests</span>
+run frontend unit tests        → 🚦 Tester:unit
+
+<span class="comment"># 5. Done</span>
+/exit`
+            }
+        };
+
+        // Update code examples based on language
+        function updateCodeExamples(lang) {
+            Object.keys(codeExamples).forEach(id => {
+                const element = document.getElementById(id);
+                if (element && codeExamples[id][lang]) {
+                    element.innerHTML = codeExamples[id][lang];
+                }
+            });
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const mainContent = document.getElementById('mainContent');
+        const noResults = document.getElementById('noResults');
+        let allSections = [];
+
+        // Initialize sections array
+        document.addEventListener('DOMContentLoaded', () => {
+            allSections = Array.from(document.querySelectorAll('.doc-section'));
+
+            // Apply saved language
+            const savedLang = localStorage.getItem('preferredLanguage') || 'zh';
+            switchLanguage(savedLang);
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+
+            if (query === '') {
+                // Show all sections
+                allSections.forEach(section => section.classList.remove('hidden'));
+                noResults.style.display = 'none';
+                mainContent.style.display = 'block';
+                return;
+            }
+
+            // Filter sections
+            let visibleCount = 0;
+            allSections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    section.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                mainContent.style.display = 'none';
+                noResults.style.display = 'block';
+            } else {
+                mainContent.style.display = 'block';
+                noResults.style.display = 'none';
+            }
+        });
+
+        // Active nav link on scroll
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.doc-section[id]');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Show/hide back to top button
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Smooth scroll for nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 1024) {
+                        document.getElementById('sidebar').classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Back to top
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Copy code button functionality
+        document.querySelectorAll('pre code').forEach((block, index) => {
+            const pre = block.parentElement;
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(block.textContent).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                });
+            };
+
+            const header = document.createElement('div');
+            header.className = 'code-header';
+            header.appendChild(copyBtn);
+            pre.insertBefore(header, pre.firstChild);
+        });
+    </script>
+</body>
+</html>
