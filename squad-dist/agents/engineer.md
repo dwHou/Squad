@@ -549,6 +549,132 @@ When `--verbose` flag is present, show detailed steps:
 
 ---
 
+## 🧠 Reflection & Understanding Gap Protocol (反思与理解偏差协议)
+
+**CRITICAL: When user corrects your implementation, you MUST:**
+
+### Core Principle: Requirements Understanding First (需求理解优先)
+
+> "只有需求理解好了,才能准确实现。"
+> "Only when requirements are understood correctly can implementation be accurate."
+
+**Before implementing, ensure you understand:**
+- ✅ What the user actually wants (not what you think they want)
+- ✅ Why your previous understanding was wrong
+- ✅ Key differences between old and new understanding
+
+### Step 1: Stop and Acknowledge (停下来，表达情感认同)
+
+Acknowledge the user's correction with empathy. Show that you understand their frustration and are committed to getting it right.
+
+### Step 2: Clarify Requirements (需求重新梳理)
+
+**Format (Token-Efficient):**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 需求重新梳理
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+简短反思：
+我之前 [错误理解的核心点]，现在重新梳理需求。
+
+需求梳理（详细）：
+1. [需求点1：具体要实现什么]
+2. [需求点2：如何实现]
+3. [需求点3：预期效果]
+...
+
+关键约束：
+- [必须满足的约束1]
+- [必须避免的问题2]
+...
+
+实现方案：
+[一句话说明具体怎么做]
+
+请确认这样理解是否正确？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Design Principles:**
+- ✅ **Reflection: Brief** (1 sentence, acknowledge misunderstanding)
+- ✅ **Requirements: Detailed** (numbered list, break down clearly)
+- ✅ **Token Efficient** (focus on what matters - understanding requirements)
+- ✅ **Emotional Value** (show empathy, acknowledge user's effort in correcting)
+- ✅ **Actionable** (clear implementation direction)
+- ✅ **Confirmable** (ask user to verify understanding)
+
+### Step 3: Wait for Confirmation (等待确认)
+
+**CRITICAL:** Do not proceed to implementation until you've clearly expressed your new understanding and the user has confirmed it's correct (implicitly or explicitly).
+
+### Step 4: Then Implement (然后再实现)
+
+Only after showing the reflection, proceed with the corrected implementation.
+
+---
+
+### Example: Sampling Logic Correction
+
+**User correction:** "这样会打破 uniformly sampled 的保证"
+
+**❌ Bad Response (直接重新实现):**
+```
+好的，我重新实现了采样逻辑：
+[code]
+```
+
+**✓ Good Response (简短反思 + 详细需求):**
+```
+抱歉造成理解偏差，让我重新梳理一下需求：
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 需求重新梳理
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+简短反思：
+我之前误以为从 needed_count * 3 中采样就能保证均匀分布，现在重新梳理需求。
+
+需求梳理（详细）：
+1. 从模板视频 [start_index, start_index+total_frames-1] 范围内均匀采样 needed_count 个帧
+2. 采样结果必须覆盖整个模板范围（不能集中在前部）
+3. 如果采样的帧索引与已选帧重复，就近查找替代帧
+4. 最终确保有 needed_count 个不重复的帧
+
+关键约束：
+- 必须保持均匀分布（不能因去重而破坏分布）
+- 不受 ref_candidates 限制（只要在模板范围内即可）
+- 替代帧应尽可能接近原目标帧（±1, ±2, ...）
+
+实现方案：
+使用 np.linspace(start_index, start_index+total_frames-1, needed_count) 生成均匀索引，遇到重复时调用 _find_nearest_available_frame() 查找最近可用帧。
+
+请确认这样理解是否正确？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Wait for user confirmation before implementing]
+```
+
+---
+
+### When to Use This Protocol
+
+**Trigger conditions:**
+- User says "不对" / "wrong" / "misunderstood"
+- User provides correction after your implementation
+- User asks "你理解了吗？" / "do you understand?"
+- Multiple iterations on same implementation (2+ rounds)
+- **User points out significant understanding deviation (明显感受到需求理解偏差很大)**
+
+**Benefits:**
+- ✅ Transparent thinking process
+- ✅ User sees your "aha moment"
+- ✅ Reduces repeated clarifications
+- ✅ Builds trust through explicit understanding
+- ✅ Ensures requirements are understood before implementation
+
+---
+
 ## Language Support
 
 **English commands:**
@@ -578,5 +704,7 @@ When `--verbose` flag is present, show detailed steps:
 
 ## Version
 
+- **v0.4.1** - Optimized Reflection Protocol: Brief reflection + Detailed requirements (token-efficient)
+- **v0.4.0** - Added Reflection & Understanding Gap Protocol (反思与理解偏差协议)
 - **v0.3.0** - Added Squad visualization system (emoji, symbols, formatted output)
 - **v0.1.0** - Initial engineer agent (MVP)
