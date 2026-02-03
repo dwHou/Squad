@@ -569,6 +569,23 @@
             line-height: 1.6;
         }
 
+        .explore-more-link {
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 0.85em;
+            color: var(--electric-blue);
+            opacity: 0.7;
+            text-decoration: none;
+            transition: opacity 0.3s, color 0.3s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .explore-more-link:hover {
+            opacity: 1;
+            color: var(--cyber-blue);
+            text-decoration: underline;
+        }
+
         /* Mission Flow */
         .mission-flow {
             background: linear-gradient(180deg, transparent 0%, var(--tactical-gray) 20%, var(--tactical-gray) 80%, transparent 100%);
@@ -1206,6 +1223,14 @@
                 <div class="feature-icon">⚡</div>
                 <h3 data-i18n="feature.skills.title">Skills Arsenal</h3>
                 <p data-i18n="feature.skills.desc">Equipped with 16+ professional skill modules — frontend design, automated testing, document processing. Extensible and plug-and-play, dynamically invoked by agents.</p>
+                <a href="https://skillsmp.com/"
+                   target="_blank"
+                   rel="noopener"
+                   class="explore-more-link"
+                   title="Explore 96,751+ community skills"
+                   data-i18n-title="feature.skills.explore.title">
+                    <span data-i18n="feature.skills.explore">Want more? →</span>
+                </a>
             </div>
         </div>
     </section>
@@ -1386,6 +1411,8 @@
                 'feature.extensible.desc': 'Built for evolution. Add custom agents, routing rules, and skills as your needs grow.',
                 'feature.skills.title': 'Skills Arsenal',
                 'feature.skills.desc': 'Equipped with 16+ professional skill modules — frontend design, automated testing, document processing. Extensible and plug-and-play, dynamically invoked by agents.',
+                'feature.skills.explore': 'Want more? →',
+                'feature.skills.explore.title': 'Explore 96,751+ community skills',
                 'flow.label': '/// OPERATION PROTOCOL',
                 'flow.title': 'HOW IT WORKS',
                 'flow.desc': 'From activation to execution in three simple steps.',
@@ -1446,6 +1473,8 @@
                 'feature.extensible.desc': '为演进而生。根据需求添加自定义智能体、路由规则和技能。',
                 'feature.skills.title': '技能武器库',
                 'feature.skills.desc': '配备 16+ 专业技能工具包——前端设计、自动化测试、文档处理。可扩展、即插即用，智能体根据任务需求动态调用。',
+                'feature.skills.explore': '需要更多？→',
+                'feature.skills.explore.title': '探索 96,751+ 社区技能',
                 'flow.label': '/// 作战协议',
                 'flow.title': '工作流程',
                 'flow.desc': '从激活到执行，三步完成。',
@@ -1495,6 +1524,14 @@
                 const key = el.dataset.i18nHtml;
                 if (translations[lang][key]) {
                     el.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update title attributes
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const key = el.dataset.i18nTitle;
+                if (translations[lang][key]) {
+                    el.title = translations[lang][key];
                 }
             });
         }
